@@ -26,7 +26,7 @@ herramienta de búsqueda. El diseño completo y las decisiones cerradas están e
 | 1 · Maqueta y paleta | **Aprobado por el dueño el 2026-09-28**, con cambios ya aplicados | `design-src/Maqueta.html`; `node design-src/contrastes.mjs` sale con 0 |
 | 2 · Infraestructura | **Hecho el 2026-09-28** | la tabla de abajo |
 | 3 · Spec del núcleo | **Aprobado por el dueño el 2026-09-28** | `docs/superpowers/specs/2026-09-28-nucleo-design.md` |
-| 4 · Plan | Pendiente | `docs/superpowers/plans/` |
+| 4 · Plan | **Hecho el 2026-09-28**: hoja de ruta de las 7 fases (cada pantalla y regla con su tarea y su test) y el plan detallado de la fase 1; el de cada fase siguiente se escribe al cerrar la anterior | `docs/superpowers/plans/` |
 | 5 · Ejecución | Pendiente | — |
 | 6 · Antes de lanzar | Pendiente | BRIEF §2, paso 6 |
 
@@ -218,4 +218,10 @@ lecciones caras de bagayí, en el BRIEF §9.3. Lo que más cuesta olvidar:
    respondidas (proveedor de mapas, denuncias, redes, métricas y zonas) y la
    zona social descrita en su §8.1. Las decisiones del §7 de este documento ya
    están todas en el spec.
-3. Paso 4: el plan por fases, desde el spec, con `writing-plans`.
+3. Paso 4 cerrado: `docs/superpowers/plans/2026-09-28-nucleo-hoja-de-ruta.md`
+   y `2026-09-28-fase-1-base.md`. Al escribirlo se ajustó el spec (commit del
+   plan): el rol y la suspensión pasan a `perfiles_privados`, los polígonos
+   salen todos del paquete del INE del Censo 2023, y `consentimientos`,
+   `eventos` y `cuotas` entran con las fases que los usan.
+4. Paso 5: ejecutar la fase 1 (tarea 0 en adelante). La tarea 8 baja un zip
+   de 57 MB del INE: se le pide permiso al dueño en ese paso.

@@ -141,9 +141,9 @@ repite para dar buenos mensajes. PostGIS está en el esquema `extensions`.
 
 | Tabla | Columnas | Lectura |
 |---|---|---|
-| `perfiles` | `id` → auth.users, `nombre`, `tipo` (`persona` \| `protectora`), `verificada`, `rol` (`usuario` \| `admin`), `suspendido`, fechas | pública |
-| `perfiles_privados` | `id` → perfiles, `whatsapp_por_defecto` (E.164). Aparte porque la RLS es por fila: en `perfiles` lo traería cualquier `select=*` | sólo su dueño |
-| `avisos` | `id`, `id_corto`, `autor_id`, `tipo` (`perdido` \| `encontrado` \| `adopcion`), `estado` (`activo` \| `resuelto` \| `vencido` \| `oculto`), `especie` (`perro` \| `gato` \| `otro`), `nombre`, `sexo`, `tamano`, `edad_aprox`, `color`, `senas`, `historia`, `fecha_hecho`, `punto` (geography Point, ya redondeado), `departamento`, `zona`, `recompensa` (sólo perdido), `vence_en`, `resuelto_en`, `resolucion`, `ayudo_sitio`, `ayudo_avistamiento`, `oculto_por` (`admin` \| `denuncias`, sólo si está oculto), fechas | activos, resueltos y vencidos: pública (§5.1.1); ocultos: autor y admin |
+| `perfiles` | `id` → auth.users, `id_corto`, `nombre`, `tipo` (`persona` \| `protectora`), `verificada`, `eliminado_en`, fechas | pública |
+| `perfiles_privados` | `id` → perfiles, `whatsapp_por_defecto` (E.164), `rol` (`usuario` \| `admin`), `suspendido`. Aparte porque la RLS es por fila: en `perfiles` cualquier `select=*` traería el WhatsApp y diría quién es admin (bagayí 005). *Ajuste del plan de la fase 1.* | su dueño y el admin |
+| `avisos` | `id`, `id_corto`, `autor_id`, `tipo` (`perdido` \| `encontrado` \| `adopcion`), `estado` (`activo` \| `resuelto` \| `vencido` \| `oculto`), `especie` (`perro` \| `gato` \| `otro`), `nombre`, `sexo`, `tamano`, `edad_aprox`, `color`, `senas`, `historia`, `fecha_hecho`, `punto` (geography Point, ya redondeado), `departamento`, `zona`, `recompensa` (sólo perdido), `vence_en`, `resuelto_en` (el cartel sale del tipo: «¡Volvió a casa!» o «¡Encontró familia!»), `ayudo_sitio`, `ayudo_avistamiento`, `oculto_por` (`admin` \| `denuncias`, sólo si está oculto), fechas | activos, resueltos y vencidos: pública (§5.1.1); ocultos: autor y admin |
 | `avistamientos` | `id`, `id_corto`, `aviso_id` (opcional), `autor_id`, `especie`, `nota` (≤ 140), `foto`, `punto` (redondeado), `visto_en`, `departamento`, `zona`, `estado` (`activo` \| `vencido` \| `oculto`; el vencido lo marca el cron para ordenar, lo vigente lo decide `vence_en`), `oculto_por`, `vence_en`, fechas. **Sin datos de contacto de quien lo carga** | vigentes y vencidos: pública (§5.1.1); ocultos: autor y admin |
 | `fotos_aviso` | `aviso_id`, `path`, `orden` (0–5) | como su aviso |
 | `contactos_aviso` | `aviso_id`, `whatsapp` (E.164), `consentido_en` | **ninguna pública**: la lee `/api/contacto` con la service role |
@@ -288,17 +288,21 @@ Como el BRIEF §7, con esto cerrado:
     PMTiles de Uruguay servido por nosotros), con el mismo MapLibre. El cambio es
     la URL del estilo, que vive en un solo lugar.
   - OpenFreeMap vive de donaciones: al lanzar, conviene que la marca aporte.
-- **Polígonos:**
-  - Departamentos: *Límites Departamentales* de la IDE Uruguay (producto del
-    Servicio Geográfico Militar, escala 1:50.000), GeoJSON en EPSG:4326, con la
-    **Licencia de Datos Abiertos Uruguay**.
-  - Barrios de Montevideo: *Barrios de Montevideo según INE*, que distribuye el
-    Servicio de Geomática de la Intendencia, **de uso libre según la resolución
-    640/10**. Vienen en EPSG:32721 y se reproyectan a 4326 al cargarlos.
-  - Resto del país: *Localidades Censales* del INE (Censo 2023), polígonos en
-    EPSG:4326, **de uso libre citando al INE** como fuente.
-  - La atribución de OpenFreeMap y de las tres fuentes de polígonos (IDE Uruguay,
-    Intendencia de Montevideo, INE) va en el pie del mapa.
+- **Polígonos:** *ajuste del plan de la fase 1*, una sola fuente para los tres:
+  el paquete **Unidades Geoestadísticas del Censo 2023 del INE** (un zip de 57 MB
+  con `depto_23_pg.gpkg`, `barrios_mvd_23_pg.gpkg` y `loc_23_pg.gpkg`). Son de
+  la misma fecha y encajan entre sí, y el INE los publica **de uso libre citando
+  al INE** como fuente (se confirma en los PDF de metadatos del mismo zip antes
+  de cargarlos).
+  - Los barrios de Montevideo son los 62 del INE; los nombres llegan en
+    mayúsculas y sin tildes, y se muestran con una tabla propia («Parque Batlle,
+    Villa Dolores»).
+  - Las localidades del resto del país se muestran en tipo título; las tildes
+    que el INE no trae quedan para una mejora posterior.
+  - Respaldo, si el zip cambiara: los límites departamentales del IGM por el WFS
+    de la IDE y los barrios por el WFS de la Intendencia (licencias verificadas
+    el 2026-09-28).
+  - La atribución de OpenFreeMap y del INE va en el pie del mapa.
 - **Consulta:** RPC `puntos_en_mapa(recuadro, tipos, especie, desde)`, sólo campos
   públicos, índice GIST y tope de puntos. La lista es el equivalente accesible
   del mapa: todo lo del mapa se alcanza por teclado y lector de pantalla.
@@ -508,7 +512,9 @@ Las del BRIEF §2, paso 4; cada una deja algo desplegable, en su rama.
 1. **Base:** esquema con PostGIS, redondeo del punto, polígonos, RLS, reglas,
    bucket, `modulos` y `configuracion`, admin, y los tests `*-base`. Antes de la
    primera función de `/api`: pasar las funciones de Vercel de `iad1` (donde
-   quedaron por defecto) a `gru1`, São Paulo, al lado de la base.
+   quedaron por defecto) a `gru1`, São Paulo, al lado de la base. *Ajuste del
+   plan:* `consentimientos` entra con la fase 2, que es la que lo usa, y
+   `eventos` y `cuotas` con la 3.
 2. **Publicar:** selector de ubicación, código por email, borrador en el
    navegador, recompensa, Mis avisos.
 3. **Ver y contactar:** feed, detalle, `/api/contacto`, denunciar, parecidos.
