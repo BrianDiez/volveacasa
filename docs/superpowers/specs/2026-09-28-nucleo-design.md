@@ -220,7 +220,20 @@ Como el BRIEF §7, con esto cerrado:
 - **Librería: MapLibre GL.** Es vectorial y se tiñe con la paleta, que es lo que
   mostró la maqueta. Pesa más que Leaflet, pero va en un chunk lazy: quien no
   abre el mapa no lo descarga. Pide `worker-src blob:` en la CSP.
-- **Proveedor de tiles:** ver §10, pregunta 1.
+- **Proveedor de tiles: OpenFreeMap** (decisión del dueño, 2026-09-28; la
+  comparación está en el §10.1). Tiles vectoriales, sin clave ni registro, con uso
+  comercial permitido y sin tope de vistas.
+  - Estilo: uno de los de OpenFreeMap, teñido con la paleta (tierra
+    `--mapa-tierra`, agua `--mapa-agua`) para que los marcadores tengan el
+    contraste medido.
+  - CSP: el dominio `tiles.openfreemap.org` en `connect-src` e `img-src`, más
+    `worker-src blob:` para MapLibre. Se prueba en un deploy de preview.
+  - Atribución obligatoria: «OpenFreeMap © OpenMapTiles Data from
+    OpenStreetMap». MapLibre la agrega sola; se suma la de los polígonos.
+  - Plan B, si el servicio público falla o se vuelve lento: Protomaps (un
+    PMTiles de Uruguay servido por nosotros), con el mismo MapLibre. El cambio es
+    la URL del estilo, que vive en un solo lugar.
+  - OpenFreeMap vive de donaciones: al lanzar, conviene que la marca aporte.
 - **Polígonos:**
   - Departamentos: *Límites Departamentales* de la IDE Uruguay (producto del
     Servicio Geográfico Militar, escala 1:50.000), GeoJSON en EPSG:4326, con la
@@ -291,10 +304,11 @@ diseñado y apagado; su fase va después de Compartir.
 
 ---
 
-## 10 · Preguntas abiertas (se hacen de a una)
+## 10 · Preguntas al dueño (se hacen de a una)
 
-1. **Proveedor de tiles** (BRIEF §10.8). Criterios del brief: que el plan gratis
-   permita este uso (lo patrocina una marca), su tope y qué pasa al pasarlo.
+1. **Proveedor de tiles** (BRIEF §10.8). **Decidido el 2026-09-28: OpenFreeMap**
+   (§6). Criterios del brief: que el plan gratis permita este uso (lo patrocina
+   una marca), su tope y qué pasa al pasarlo.
 
    | Opción | Uso comercial gratis | Tope | Al pasarlo |
    |---|---|---|---|
@@ -304,9 +318,7 @@ diseñado y apagado; su fase va después de Compartir.
    | Mapbox | según licencia | 50.000 cargas/mes | cobra (USD 5 cada 1.000) |
    | Protomaps (PMTiles propio) | sí | lo que aguante el hosting | lo pagamos nosotros |
 
-   **Recomendación: MapLibre + OpenFreeMap**, con Protomaps servido por nosotros
-   como plan B si el servicio público falla. Atribución obligatoria:
-   «OpenFreeMap © OpenMapTiles Data from OpenStreetMap».
+   Precios y condiciones leídos en el sitio de cada proveedor el 2026-09-28.
 2. **Ocultar por denuncias** (BRIEF §10.3). Propuesta del brief: 3 denuncias de
    usuarios distintos ocultan un aviso o un avistamiento hasta la revisión.
 3. **Moderación de la publicación en redes.** Opciones: sale directo; sale sólo
@@ -340,7 +352,9 @@ diseñado y apagado; su fase va después de Compartir.
 Las del BRIEF §2, paso 4; cada una deja algo desplegable, en su rama.
 
 1. **Base:** esquema con PostGIS, redondeo del punto, polígonos, RLS, reglas,
-   bucket, `modulos` y `configuracion`, admin, y los tests `*-base`.
+   bucket, `modulos` y `configuracion`, admin, y los tests `*-base`. Antes de la
+   primera función de `/api`: pasar las funciones de Vercel de `iad1` (donde
+   quedaron por defecto) a `gru1`, São Paulo, al lado de la base.
 2. **Publicar:** selector de ubicación, código por email, borrador en el
    navegador, recompensa, Mis avisos.
 3. **Ver y contactar:** feed, detalle, `/api/contacto`, denunciar, parecidos.
