@@ -171,6 +171,7 @@ tamaño (3 MB) y de tipo (WebP y JPEG), con el patrón de bagayí 20260827001200
 | `tope_avisos_por_dia`, `tope_avistamientos_por_dia` | 5, 20 | anti-spam |
 | `parecidos_km`, `parecidos_dias` | 3, 15 | Parecidos |
 | `umbral_contador` | 50 | el contador del inicio |
+| `redes_vence_horas` | 12 | §9: lo que no se aprueba en ese plazo no sale (se usa cuando se prenda `redes_automaticas`) |
 | `denuncias_para_ocultar` | 3 | §5.4, moderación |
 | `antiguedad_denunciante_horas` | 24 | §5.4: debajo de esto, la denuncia no cuenta para ocultar |
 
@@ -322,7 +323,24 @@ diseñado y apagado; su fase va después de Compartir.
   que hace falta convertir. Se registra qué se publicó y dónde, para poder
   borrarlo al resolverse u ocultarse el aviso donde la API lo permita.
 - **Consentimiento:** una casilla en Publicar, registrada en `consentimientos`.
-- **Moderación antes de salir:** ver §10, pregunta 3.
+  El texto dice que el aviso **puede** salir en las redes de Volvé a casa, no que
+  va a salir: depende de la aprobación.
+- **Moderación antes de salir** (decisión del dueño, 2026-09-28):
+  - Los perdidos de **personas** entran en una **cola** que el admin aprueba o
+    descarta con un toque, desde el teléfono: le llega un aviso con la historia
+    armada y los dos botones.
+  - Los perdidos de **protectoras verificadas** salen directo, sin cola.
+  - Si nadie aprueba en `redes_vence_horas` (12, en `configuracion`), el pedido
+    vence y no sale: no se publica algo viejo que quizás ya se resolvió.
+  - Tampoco sale si, al momento de publicar, el aviso ya no está `activo`
+    (resuelto, vencido u oculto por denuncias).
+  - Tabla `publicaciones_redes`: aviso, red, estado (`en_cola` \| `aprobada` \|
+    `publicada` \| `descartada` \| `vencida` \| `fallida`), quién decidió y
+    cuándo, el id de la publicación en la red. Sólo la lee y la escribe el admin
+    (y el servidor).
+- **Por verificar en el spec del módulo:** si la API de Instagram deja borrar
+  una publicación hecha por API. Si no deja, un aviso resuelto se marca en la
+  historia siguiente como «¡Volvió a casa!» en lugar de borrarse.
 
 ---
 
@@ -346,9 +364,10 @@ diseñado y apagado; su fase va después de Compartir.
    cuentas de menos de 24 horas, las protectoras verificadas nunca se ocultan
    solas, y al ocultarse sale un mail al admin y el autor ve «En revisión»
    (§5.4). La alternativa descartada: que las denuncias sólo llegaran a la cola.
-3. **Moderación de la publicación en redes.** Opciones: sale directo; sale sólo
-   lo de protectoras verificadas; o pasa por una cola que el admin aprueba con un
-   toque. **Recomendación: la cola**, porque lo que sale ahí lleva la marca.
+3. **Moderación de la publicación en redes.** **Decidido el 2026-09-28:** una
+   cola que el admin aprueba con un toque, con las protectoras verificadas
+   saliendo directo; lo que no se aprueba en 12 horas no sale (§9). Descartadas:
+   que saliera todo directo, o sólo lo de protectoras.
 4. **Analítica** (BRIEF §10.7). **Recomendación:** empezar sólo con la tabla
    `eventos` propia (sin cookies ni datos personales), que cubre las métricas del
    brief, y sumar una analítica sin cookies después si hace falta.
