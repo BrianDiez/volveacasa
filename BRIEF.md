@@ -263,16 +263,29 @@ con fecha.
    sesión y el borrador vive en el navegador, así sobrevive a ir a buscar el
    código al mail. Al final se pide el email, el código, y se publica. La base
    solo recibe escrituras autenticadas.
+   - **Cargar un avistamiento también pide sesión** (decisión del dueño,
+     2026-09-28), con el mismo orden: primero el avistamiento, al final el
+     código. La sesión dura meses, así que desde el segundo avistamiento es
+     inmediato. Y si alguien carga avistamientos falsos para engañar a un
+     dueño, hay a quién bloquear.
 10. **Avisos y avistamientos se publican al instante,** porque un perro perdido
     no espera moderación. La moderación es por denuncia. Los negocios de los
     módulos, en cambio, esperan aprobación manual.
 11. **Nunca se venden animales.** Los avisos no tienen columna de precio, y
     "pide plata" es un motivo de denuncia. La tienda vende solo productos.
-12. **Los avisos vencen:** perdido y encontrado a los 30 días, adopción a los
-    60, avistamientos a los 7. Los avisos se renuevan con un toque desde el
-    aviso o desde el mail de recordatorio; los avistamientos no se renuevan.
-    - Un vencido sale del feed y del mapa, pero **su link sigue andando** y dice
-      "este aviso venció": ese link circula por WhatsApp.
+12. **Todo vence.** Perdido y encontrado a los 30 días, adopción a los 60. Los
+    avisos se renuevan con un toque desde el aviso o desde el mail de
+    recordatorio.
+    - Un aviso vencido sale del feed y del mapa, pero **su link sigue andando**
+      y dice "este aviso venció": ese link circula por WhatsApp.
+    - **Un avistamiento dura 24 horas desde que el animal fue visto**
+      (`visto_en`), no desde que se cargó: lo que importa es cuánto hace que
+      alguien lo vio (decisión del dueño, 2026-09-28).
+      - No se renueva.
+      - Vencido, sale del mapa, pero sigue en el recorrido del perdido,
+        atenuado y con su antigüedad.
+      - Un avistamiento de hace días es ruido en el mapa general y señal en la
+        historia de un perro puntual.
     - Los plazos viven en `configuracion`.
 13. **Lo resuelto se celebra.** Los carteles son "¡Volvió a casa!" y "¡Encontró
     familia!". El aviso resuelto queda visible, sin el botón de contacto, sale
@@ -331,9 +344,11 @@ Nada de bagayí en el header, en el feed ni en el mapa.
     fijos abajo, con el aviso contra estafas.
   - Autor: persona, o protectora con insignia.
   - En un perdido: **Avistamientos** en un mini mapa con el recorrido, del más
-    viejo al más nuevo, más el botón *Lo vi*.
+    viejo al más nuevo, con los vencidos atenuados, más el botón *Lo vi*.
   - *Parecidos*: avisos del tipo opuesto, misma especie, a menos de N km
-    (configurable), ±15 días. Es una consulta, y es lo que produce reencuentros.
+    (configurable), ±15 días. En un perdido, también los avistamientos sueltos
+    vigentes de la misma especie cerca. Es una consulta, y es lo que produce
+    reencuentros.
   - *Denunciar*, discreto.
 - **Publicar**, una pregunta por pantalla en el teléfono:
   1. Tipo.
@@ -350,10 +365,10 @@ Nada de bagayí en el header, en el feed ni en el mapa.
 - **Lo vi (avistamiento).** Es un recorrido corto, porque quien ve un perro
   suelto tiene menos paciencia que su dueño:
   1. Dónde: el mapa arranca en tu ubicación.
-  2. Cuándo: *ahora*, o hace cuánto.
+  2. Cuándo: *ahora*, o hace cuánto, dentro de la vigencia (§3.12).
   3. Especie, una nota corta (color, collar, hacia dónde iba) y una foto
      opcional.
-  4. Email y código, si no hay sesión (lo decide el §10.8).
+  4. Email y código, si no hay sesión (§3.9).
   5. *"Gracias"*. Si el avistamiento está ligado a un aviso, la pantalla
      agrega *"El dueño ya recibió tu avistamiento"*.
 - **Listo para compartir** es la pantalla más importante después de publicar.
@@ -460,8 +475,9 @@ cierra.
   completa `departamento` y `zona` con `ST_Contains` contra los polígonos. El
   cliente manda el punto que marcó la persona y la base guarda el redondeado.
 - **Avistamientos:**
-  - `visto_en` no puede estar en el futuro ni ser más viejo que N días
-    (configurable).
+  - `visto_en` no puede estar en el futuro ni ser anterior a la vigencia
+    (§3.12): un avistamiento no nace vencido.
+  - `vence_en` lo pone la base: `visto_en` más la vigencia.
   - `aviso_id` solo puede apuntar a un aviso `perdido` y `activo`.
   - Al ligarse a un aviso, se le avisa al autor por mail en minutos. Un Database
     Webhook o `pg_net` llama a `/api` con un secreto; es el patrón de la 087 de
@@ -469,12 +485,17 @@ cierra.
 - **Topes:** avisos y avistamientos por usuario por día (anti-spam) y fotos por
   aviso (6). Todo va en `configuracion`. Un usuario suspendido no publica ni
   carga avistamientos.
-- **Vencimiento:** `pg_cron` diario marca los vencidos y dispara los
-  recordatorios. El patrón es la migración 087 de bagayí más
-  `bagayi/api/mp/tareas.js`: un cron que llama a un endpoint con un secreto.
-  Los recordatorios salen por la API del proveedor de mail, con otro remitente
-  que el del login: la documentación de Supabase pide no mezclar mails de
-  autenticación con los demás.
+- **Vencimiento:**
+  - **Lo vigente lo decide la consulta,** con `vence_en > now()`, no un
+    `estado` que actualiza un cron. Con avistamientos de 24 horas, un cron
+    diario los dejaría en el mapa hasta un día de más.
+  - `pg_cron` corre cada hora: pone `estado = vencido` para ordenar y dispara
+    los recordatorios de avisos por vencer. El patrón es la migración 087 de
+    bagayí más `bagayi/api/mp/tareas.js`: un cron que llama a un endpoint con
+    un secreto.
+  - Los recordatorios salen por la API del proveedor de mail, con otro
+    remitente que el del login: la documentación de Supabase pide no mezclar
+    mails de autenticación con los demás.
 
 ---
 
@@ -526,7 +547,7 @@ Paso 6.
 **Qué muestra el mapa:**
 
 - los avisos activos de perdidos, encontrados y en adopción;
-- los avistamientos de los últimos 7 días;
+- los avistamientos vigentes (§3.12);
 - cada tipo con su color y su ícono (§3.7).
 
 Tiene los mismos filtros que el feed (tipo, especie, fecha), que van en la URL.
@@ -537,7 +558,8 @@ es distinto de *encontrado* (lo tiene con él).
 
 - Puede estar ligado a un perdido (*Lo vi*, desde el detalle) o suelto (*Vi un
   animal suelto*, desde el inicio o el mapa).
-- Los avistamientos ligados se ven en el detalle del perdido como un recorrido.
+- Los avistamientos ligados se ven en el detalle del perdido como un recorrido,
+  también después de vencer (§3.12).
 
 **Privacidad del punto:** es la regla que manda sobre todo lo demás de esta
 sección.
@@ -579,7 +601,7 @@ se alcanza desde la lista, con teclado y con lector de pantalla.
     pide `worker-src blob:` en la CSP.
   - En los dos casos, el chunk del mapa es lazy: quien no abre el mapa no lo
     descarga.
-- **Proveedor de tiles:** se elige en el spec (§10.9). El servidor de tiles de
+- **Proveedor de tiles:** se elige en el spec (§10.8). El servidor de tiles de
   OpenStreetMap es para uso liviano y puede cortar el acceso: no sirve de base
   para un sitio que se viraliza.
 - **Sin búsqueda por dirección en la primera entrega:** el mapa se centra con
@@ -604,6 +626,8 @@ se alcanza desde la lista, con teclado y con lector de pantalla.
 - los cuatro tipos se ven con su color y su ícono, y se filtran;
 - un avistamiento cargado con *Lo vi* aparece en el mapa y en el detalle del
   perdido, y le llega el mail al autor;
+- un avistamiento sale del mapa en el momento en que vence y sigue, atenuado,
+  en el recorrido del perdido;
 - una consulta SQL confirma que ningún punto guardado tiene más precisión que
   la de su grilla.
 
@@ -742,13 +766,7 @@ Cada una tiene su § en `bagayi/HANDOFF.md`, con el detalle.
    de títulos, en la maqueta.
 7. **Analítica.** Una sin cookies evita el cartel de consentimiento; se elige en
    el spec.
-8. **¿Los avistamientos piden sesión?**
-   - **Recomendado: sí.** La sesión dura meses, así que desde el segundo
-     avistamiento es inmediato. Y un avistamiento falso puede usarse para
-     engañar o torturar a un dueño: tiene que haber a quién bloquear.
-   - La alternativa es sin sesión, por `/api` con límite por IP, marcado *"sin
-     verificar"*.
-9. **Proveedor de tiles.**
+8. **Proveedor de tiles.**
    - Criterios:
      - que el plan gratis permita este uso (el sitio lo patrocina una marca);
      - su tope mensual;
