@@ -261,6 +261,10 @@ h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.02
 .opcion--sel { border-color: var(--marca); background: var(--marca-fondo); }
 .opcion__titulo { font-weight: 600; font-size: 15px; }
 .opcion__bajada { font-size: 13px; color: var(--texto); margin-top: 2px; line-height: 1.4; }
+/* Lo que se abre dentro de la opción elegida (la recompensa, en «Perdí»). */
+.opcion__extra { flex-basis: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid color-mix(in srgb, var(--marca) 22%, transparent); padding-top: 12px; margin-top: 2px; }
+.opcion__extra strong { display: flex; align-items: center; gap: 7px; font-size: 14.5px; }
+.opcion__extra .i { font-size: 17px; }
 .radio { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--borde-fuerte); flex: none; background: var(--panel); }
 .opcion--sel .radio { border: 7px solid var(--marca); }
 .casilla { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--borde-fuerte); flex: none; display: grid; place-items: center; color: #fff; background: var(--panel); }
@@ -281,6 +285,12 @@ h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.02
 .pie-bagayi { font-size: 12.5px; color: var(--texto-suave); text-align: center; padding: 22px 16px 26px; }
 .pie-bagayi a { color: var(--tinta); font-weight: 600; }
 .pie-bagayi a strong { font-family: var(--display); font-weight: 700; }
+/* «Un proyecto de bagayí», con el logo chico de bagayí (pedido del dueño). */
+.credito-bagayi { display: inline-flex; align-items: center; gap: .35em; white-space: nowrap; }
+.credito-bagayi a { display: inline-flex; align-items: center; gap: .3em; }
+.credito-bagayi svg { height: 1.45em; width: auto; aspect-ratio: 440 / 360; flex: none; }
+.credito-bagayi strong { font-family: var(--display); font-weight: 700; }
+.bagayi-oscuro { --bgy-trazo: #fff; --bgy-caja: none; --bgy-solapa: none; --bgy-hueco: #231A15; }
 .pie-bagayi .enlaces { display: flex; justify-content: center; gap: 14px; margin-top: 8px; }
 .pie-bagayi .enlaces a { color: var(--texto); font-weight: 500; }
 
@@ -586,29 +596,24 @@ h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.02
 .historia__pie .isotipo { width: 64px; height: 64px; border-radius: 18px; }
 .historia__pie small { font-size: 30px; color: var(--texto-suave); }
 .zona-segura { position: absolute; left: 0; right: 0; background: repeating-linear-gradient(-45deg, rgba(190,24,93,.07) 0 14px, transparent 14px 28px); border: 2px dashed rgba(35,26,21,.18); font-size: 26px; color: var(--texto-suave); display: grid; place-items: center; }
-.afiche { width: 794px; height: 1123px; background: #fff; color: #1A1411; display: flex; flex-direction: column; }
-.afiche__cuerpo { padding: 40px 50px 0; display: flex; flex-direction: column; flex: 1; }
-.afiche__titulo { font-family: var(--display); font-weight: 900; font-stretch: 68%; font-size: 150px; line-height: .82; letter-spacing: -.01em; color: var(--perdido); text-transform: uppercase; text-align: center; }
+.afiche { width: 794px; height: 1123px; background: #fff; color: #1A1411; display: flex; flex-direction: column; overflow: hidden; }
+.afiche__cuerpo { padding: 44px 50px 36px; display: flex; flex-direction: column; flex: 1; }
+.afiche__titulo { font-family: var(--display); font-weight: 900; font-stretch: 68%; font-size: var(--tam-titulo, 176px); line-height: .82; white-space: nowrap; letter-spacing: -.01em; color: var(--c); text-transform: uppercase; text-align: center; }
 .afiche__foto { margin-top: 26px; border: 2px solid #1A1411; }
-.afiche__foto .foto { aspect-ratio: 2.3 / 1; }
-.afiche__nombre { font-family: var(--display); font-weight: 800; font-size: 64px; letter-spacing: -.035em; line-height: 1; margin-top: 20px; text-align: center; }
-.afiche__senas { font-size: 19px; line-height: 1.45; text-align: center; margin: 10px auto 0; max-width: 620px; }
-.afiche__fila { display: grid; grid-template-columns: 1fr 170px; gap: 26px; margin-top: 22px; align-items: center; border-top: 2px solid #1A1411; padding-top: 18px; }
+.afiche__foto .foto { aspect-ratio: 16 / 9; }
+.afiche__bajada { font-size: 26px; font-weight: 600; text-align: center; margin-top: 12px; }
+.afiche__nombre { font-family: var(--display); font-weight: 800; font-size: 74px; letter-spacing: -.035em; line-height: 1; margin-top: 20px; text-align: center; }
+.afiche__senas { font-size: 21px; line-height: 1.45; text-align: center; margin: 10px auto 0; max-width: 620px; }
+.afiche__fila { display: grid; grid-template-columns: 1fr 196px; gap: 26px; margin-top: 22px; align-items: center; border-top: 2px solid #1A1411; padding-top: 18px; }
 .afiche__rotulo { font-size: 12.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #5C514A; }
 .afiche__dato { font-size: 21px; font-weight: 600; margin: 3px 0 12px; }
-.afiche__tel { font-family: var(--display); font-weight: 800; font-size: 50px; letter-spacing: -.02em; line-height: 1; margin-top: 4px; }
+.afiche__tel { font-family: var(--display); font-weight: 800; font-size: 66px; letter-spacing: -.02em; line-height: 1; margin-top: 4px; }
 .afiche__recompensa { display: inline-block; margin-top: 12px; border: 2px solid #1A1411; border-radius: 999px; padding: 4px 14px; font-weight: 700; font-size: 16px; }
 .afiche__qr { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; font-size: 12.5px; line-height: 1.3; }
-.afiche__qr svg { width: 150px; height: 150px; }
+.afiche__qr svg { width: 186px; height: 186px; }
 .afiche__qr b { font-size: 13px; }
-/* flex: none: si el contenido crece, que avise pasándose de la hoja y no
-   aplastando las tiritas, que son lo que se arranca. */
-.tiritas { flex: none; display: flex; border-top: 2px dashed #1A1411; height: 168px; margin-top: 14px; }
-/* En escritura vertical, column pone las dos líneas una al lado de la otra. */
-.tirita { flex: 1; border-left: 1.5px dashed #9B918A; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; writing-mode: vertical-rl; transform: rotate(180deg); font-size: 12px; line-height: 1.2; white-space: nowrap; }
-.tirita:last-child { border-left: 0; }
-.tirita b { font-size: 13.5px; }
-.afiche__marca { display: flex; justify-content: space-between; font-size: 12px; color: #5C514A; margin-top: 12px; }
+.afiche__marca { display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #5C514A; margin-top: auto; padding-top: 14px; border-top: 1px solid #D6D0C3; }
+.afiche__nota { font-size: 14px; line-height: 1.4; margin-top: 10px; color: #5C514A; max-width: 380px; }
 .qr { background: #fff; }
 .qr rect { fill: #1A1411; }
 </style>
@@ -664,6 +669,26 @@ h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.02
     <symbol id="i-candado" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 018 0v2.5"/></symbol>
     <symbol id="i-balanza" viewBox="0 0 24 24"><path d="M12 4v16M7 20h10M5 7h14"/><path d="M5 7l-2.5 6a2.5 2.5 0 005 0zM19 7l-2.5 6a2.5 2.5 0 005 0z"/></symbol>
     <symbol id="i-estado" viewBox="0 0 70 12"><g fill="currentColor" stroke="none"><rect x="0" y="8" width="3" height="4" rx=".7"/><rect x="4.5" y="6" width="3" height="6" rx=".7"/><rect x="9" y="3.5" width="3" height="8.5" rx=".7"/><rect x="13.5" y="1" width="3" height="11" rx=".7"/><path d="M28.5 3.4a9.3 9.3 0 0112.4 0l-1.4 1.5a7.3 7.3 0 00-9.6 0zM31 6a5.6 5.6 0 017.4 0L37 7.5a3.6 3.6 0 00-4.6 0zM33.4 8.6a2 2 0 012.6 0l-1.3 1.4z"/><rect x="45.5" y=".8" width="21" height="10.6" rx="3" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/><rect x="47.3" y="2.6" width="16" height="7" rx="1.6"/><rect x="67.6" y="4.2" width="1.6" height="4" rx=".7" opacity=".5"/></g></symbol>
+
+    <!-- Logo de bagayí para el crédito «Un proyecto de bagayí». Es el vectorial
+         de bagayi/public/bagayi-icon.svg; sobre fondo oscuro (.bagayi-oscuro)
+         el trazo va en blanco y la caja sin relleno, como hace bagayí. -->
+    <g id="bagayi">
+      <path fill="#078A55" d="M105 91h62l-7 73h-48z"/>
+      <ellipse cx="136" cy="91" rx="31" ry="9" fill="#078A55"/>
+      <ellipse cx="136" cy="91" rx="21" ry="5" style="fill:var(--bgy-hueco, #F7F5F0)"/>
+      <path fill="#2B7897" d="M188 65c0-12 9-21 21-21h27c12 0 21 9 21 21v16c0 7 6 14 8 22l7 59c1 8-5 14-13 14h-73c-8 0-14-6-13-14l7-59c1-8 8-15 8-22z"/>
+      <rect x="205" y="29" width="39" height="18" rx="9" fill="#2B7897"/>
+      <path fill="#8B78B9" d="M291 107c0-10 8-18 18-18h49c10 0 18 8 18 18v55c0 8-6 14-14 14h-57c-8 0-14-6-14-14z"/>
+      <path fill="#8B78B9" d="M312 91V69h-11c-6 0-10-5-8-11 1-4 5-7 10-7h34c5 0 9 3 10 7 2 6-2 11-8 11h-10v22z"/>
+      <g style="stroke:var(--bgy-trazo, #122033)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M73 163L5 210l68 43v-90z" style="fill:var(--bgy-solapa, #EAF7F1)"/>
+        <path d="M363 163l68 47-68 43v-90z" style="fill:var(--bgy-solapa, #EAF7F1)"/>
+        <path d="M73 163h290v142c0 12-10 22-22 22H95c-12 0-22-10-22-22z" style="fill:var(--bgy-caja, #fff)"/>
+        <path d="M73 163h290" fill="none"/>
+      </g>
+      <path d="M205 199C195 207 193 220 186 228C181 234 184 243 180 251C176 260 181 270 187 276C193 282 201 282 207 288C215 296 225 294 234 291C244 289 252 281 258 273C265 264 274 258 272 247C270 238 263 232 258 225C251 216 243 212 235 207C226 201 216 194 205 199Z" fill="none" stroke="#078A55" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
 
     <!-- Isotipo propuesto: casita con huella (BRIEF §10.2). -->
     <symbol id="isotipo" viewBox="0 0 32 32">
@@ -741,13 +766,17 @@ h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.02
     <h1>Publicar en dos minutos, compartir en todos lados, buscar en el mapa</h1>
     <p>Las pantallas del núcleo en el <strong>teléfono (375 px)</strong>, Inicio, Mapa y Detalle también en <strong>escritorio (1280 px)</strong>, la tarjeta en sus cinco estados, los marcadores del mapa y las tres piezas para compartir: la <strong>imagen de vista previa</strong>, la <strong>historia</strong> y el <strong>afiche A4</strong>. Los números de pantalla sirven para pedir cambios («en la 06, …»).</p>
     <div class="hallazgo">
+      <svg class="i"><use href="#i-check"/></svg>
+      <p><strong>Aprobada por el dueño el 2026-09-28</strong>, con los cambios que ya tiene esta versión: el afiche sin tiritas y más grande, uno por tipo (se busca, encontrada, en adopción), el logo de bagayí en «Un proyecto de bagayí» y el botón de recompensa al marcar «Perdí» (04).</p>
+    </div>
+    <div class="hallazgo">
       <svg class="i"><use href="#i-balanza"/></svg>
-      <p><strong>La marca pasó a frambuesa.</strong> Medida contra los colores de estado, la terracota del brief da <strong>ΔE 3,5 con AVISTADO</strong> (lado a lado cuesta distinguirlos) y 9,1 con PERDIDO. El brief pedía pasar a frambuesa si eso pasaba: da 29,0 y 20,0, y todos sus textos pasan AA. La terracota queda en el selector para que la compares en cada pantalla.</p>
+      <p><strong>La marca es frambuesa.</strong> Medida contra los colores de estado, la terracota del brief da <strong>ΔE 3,5 con AVISTADO</strong> (lado a lado cuesta distinguirlos) y 9,1 con PERDIDO. El brief pedía pasar a frambuesa si eso pasaba: da 29,0 y 20,0, y todos sus textos pasan AA. La terracota queda en el selector para que la compares en cada pantalla.</p>
     </div>
     <div class="controles">
       <div class="selector-marca" role="group" aria-label="Color de marca">
-        <button type="button" data-elegir-marca="frambuesa" aria-pressed="true"><span class="punto" style="background:#BE185D"></span>Frambuesa · propuesta</button>
-        <button type="button" data-elegir-marca="terracota" aria-pressed="false"><span class="punto" style="background:#C2410C"></span>Terracota · brief</button>
+        <button type="button" data-elegir-marca="frambuesa" aria-pressed="true"><span class="punto" style="background:#BE185D"></span>Frambuesa · aprobada</button>
+        <button type="button" data-elegir-marca="terracota" aria-pressed="false"><span class="punto" style="background:#C2410C"></span>Terracota · descartada</button>
       </div>
       <span class="silencio">Las fotos son ilustraciones de maqueta; nombres, teléfonos y lugares son de ejemplo.</span>
     </div>
@@ -947,7 +976,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.02
               <div class="volvio"><div class="foto fondo-azul"><svg class="animal a-simon" viewBox="0 0 200 200"><use href="#gato"/></svg></div><strong>Nala</strong>volvió al día</div>
             </div>
           </div>
-          <footer class="pie-bagayi">Un proyecto de <a href="#"><strong>bagayí</strong></a><div class="enlaces"><a>Qué hacer si perdiste o encontraste</a></div><div class="enlaces"><a>Términos</a><a>Privacidad</a></div></footer>
+          <footer class="pie-bagayi"><span class="credito-bagayi">Un proyecto de <a href="#"><svg viewBox="0 0 440 360" aria-hidden="true"><use href="#bagayi"/></svg><strong>bagayí</strong></a></span><div class="enlaces"><a>Qué hacer si perdiste o encontraste</a></div><div class="enlaces"><a>Términos</a><a>Privacidad</a></div></footer>
           <nav class="tabbar tabbar--flujo" aria-label="Principal"><span class="tab tab--activo"><svg class="i"><use href="#i-casa"/></svg>Inicio</span><span class="tab"><svg class="i"><use href="#i-mapa"/></svg>Mapa</span><span class="tab tab--publicar"><span class="burbuja"><svg class="i"><use href="#i-mas"/></svg></span>Publicar</span><span class="tab"><svg class="i"><use href="#i-avisos"/></svg>Mis avisos</span><span class="tab"><svg class="i"><use href="#i-usuario"/></svg>Cuenta</span></nav>
           <span class="indicador"></span>
         </div>
@@ -1042,7 +1071,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.02
             </div>
             <a class="denunciar"><svg class="i"><use href="#i-bandera"/></svg>Denunciar este aviso</a>
           </div>
-          <footer class="pie-bagayi">Un proyecto de <a href="#"><strong>bagayí</strong></a></footer>
+          <footer class="pie-bagayi"><span class="credito-bagayi">Un proyecto de <a href="#"><svg viewBox="0 0 440 360" aria-hidden="true"><use href="#bagayi"/></svg><strong>bagayí</strong></a></span></footer>
           <div style="height:128px"></div>
           <div class="barra-contacto">
             <div class="aviso-estafa"><svg class="i"><use href="#i-escudo"/></svg><span>Nunca pagues por adelantado ni pases códigos que te lleguen por SMS o WhatsApp.</span></div>
@@ -1063,14 +1092,14 @@ h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.02
 
       <!-- 04 · Tipo -->
       <div class="pantalla">
-        <div><div class="pantalla__rotulo">04 · Paso 1: qué publicás</div><div class="pantalla__nota">Desde «Perdí a mi mascota» o «Encontré» del inicio, llega con el tipo ya marcado. Quien sólo lo vio se desvía a «Lo vi».</div></div>
+        <div><div class="pantalla__rotulo">04 · Paso 1: qué publicás</div><div class="pantalla__nota">Desde «Perdí a mi mascota» o «Encontré» del inicio, llega con el tipo ya marcado. Al marcar «Perdí» aparece el botón de recompensa: sí o no, sin monto. Quien sólo lo vio se desvía a «Lo vi».</div></div>
         <div class="tel">
           <div class="estado"><span>9:41</span><svg class="i-est"><use href="#i-estado"/></svg></div>
           <div class="paso-cab"><span class="boton-icono" aria-label="Cerrar"><svg class="i"><use href="#i-cerrar"/></svg></span><span class="progreso" style="--p:14%"><i></i></span><span class="paso-cab__texto">1 de 7</span></div>
           <div class="cuerpo">
             <div class="paso">
               <h1>¿Qué querés publicar?</h1>
-              <div class="opcion opcion--sel"><span class="entrada-grande__ico"><svg class="i"><use href="#i-lupa"/></svg></span><div style="flex:1"><div class="opcion__titulo">Perdí a mi mascota</div><div class="opcion__bajada">Se escapó o no volvió.</div></div><span class="radio"></span></div>
+              <div class="opcion opcion--sel" style="flex-wrap:wrap"><span class="entrada-grande__ico"><svg class="i"><use href="#i-lupa"/></svg></span><div style="flex:1"><div class="opcion__titulo">Perdí a mi mascota</div><div class="opcion__bajada">Se escapó o no volvió.</div></div><span class="radio"></span><div class="opcion__extra"><div><strong><svg class="i"><use href="#i-regalo"/></svg>Ofrezco recompensa</strong><div class="opcion__bajada">Se ve «Hay recompensa», sin monto.</div></div><span class="interruptor interruptor--si" role="switch" aria-checked="true" aria-label="Ofrezco recompensa"></span></div></div>
               <div class="opcion"><span class="entrada-grande__ico"><svg class="i"><use href="#i-huella"/></svg></span><div style="flex:1"><div class="opcion__titulo">Encontré una mascota</div><div class="opcion__bajada">La tengo conmigo y busco a su familia.</div></div><span class="radio"></span></div>
               <div class="opcion"><span class="entrada-grande__ico"><svg class="i"><use href="#i-corazon"/></svg></span><div style="flex:1"><div class="opcion__titulo">Doy en adopción</div><div class="opcion__bajada">Busca una familia para siempre.</div></div><span class="radio"></span></div>
               <p style="font-size:14px;color:var(--texto);line-height:1.5">¿Lo viste suelto pero no lo tenés? <a class="enlace">Avisá que lo viste</a></p>
@@ -1197,7 +1226,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.02
               <span class="compartir-op"><svg class="i"><use href="#i-instagram"/></svg>Historia de Instagram<small>Descarga la imagen</small></span>
               <span class="compartir-op"><svg class="i"><use href="#i-facebook"/></svg>Facebook<small>En tu muro o en grupos</small></span>
               <span class="compartir-op"><svg class="i"><use href="#i-link"/></svg>Copiar link<small>Para cualquier lado</small></span>
-              <span class="compartir-op"><svg class="i"><use href="#i-impresora"/></svg>Afiche para imprimir<small>A4, con QR y tiritas</small></span>
+              <span class="compartir-op"><svg class="i"><use href="#i-impresora"/></svg>Afiche para imprimir<small>A4, con foto grande y QR</small></span>
             </div>
             <div style="margin-top:8px">
               <h2 style="font-size:17px">¿Será Canela?</h2>
@@ -1205,7 +1234,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.02
               <div class="parecido t-encontrado"><div class="foto fondo-azul"><svg class="animal a-canela" style="--collar:transparent;--chapa:transparent" viewBox="0 0 200 200"><use href="#perro"/></svg></div><div><span class="insignia"><svg class="i"><use href="#i-huella"/></svg>Encontrada</span><div class="parecido__nombre">Perra sin nombre</div><div class="parecido__meta">Punta Carretas · hace 1 día · 1,8 km</div></div></div>
             </div>
           </div>
-          <footer class="pie-bagayi">Un proyecto de <a href="#"><strong>bagayí</strong></a></footer>
+          <footer class="pie-bagayi"><span class="credito-bagayi">Un proyecto de <a href="#"><svg viewBox="0 0 440 360" aria-hidden="true"><use href="#bagayi"/></svg><strong>bagayí</strong></a></span></footer>
           <span class="indicador"></span>
         </div>
       </div>
@@ -1494,7 +1523,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.02
             </div>
           </div>
         </div>
-        <footer class="pie-esc"><span class="logo" style="font-size:16px;color:#fff"><span class="isotipo" style="width:26px;height:26px"><svg><use href="#isotipo"/></svg></span>volvé a casa</span><span>Un proyecto de <a href="#"><strong style="font-family:var(--display)">bagayí</strong></a></span><span class="enlaces"><a>Qué hacer si perdiste o encontraste</a><a>Términos</a><a>Privacidad</a></span></footer>
+        <footer class="pie-esc"><span class="logo" style="font-size:16px;color:#fff"><span class="isotipo" style="width:26px;height:26px"><svg><use href="#isotipo"/></svg></span>volvé a casa</span><span class="credito-bagayi bagayi-oscuro">Un proyecto de <a href="#"><svg viewBox="0 0 440 360" aria-hidden="true"><use href="#bagayi"/></svg><strong>bagayí</strong></a></span><span class="enlaces"><a>Qué hacer si perdiste o encontraste</a><a>Términos</a><a>Privacidad</a></span></footer>
       </div></div>
     </div>
 
@@ -1613,7 +1642,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.02
             </aside>
           </div>
         </div>
-        <footer class="pie-esc"><span class="logo" style="font-size:16px;color:#fff"><span class="isotipo" style="width:26px;height:26px"><svg><use href="#isotipo"/></svg></span>volvé a casa</span><span>Un proyecto de <a href="#"><strong style="font-family:var(--display)">bagayí</strong></a></span><span class="enlaces"><a>Qué hacer si perdiste o encontraste</a><a>Términos</a><a>Privacidad</a></span></footer>
+        <footer class="pie-esc"><span class="logo" style="font-size:16px;color:#fff"><span class="isotipo" style="width:26px;height:26px"><svg><use href="#isotipo"/></svg></span>volvé a casa</span><span class="credito-bagayi bagayi-oscuro">Un proyecto de <a href="#"><svg viewBox="0 0 440 360" aria-hidden="true"><use href="#bagayi"/></svg><strong>bagayí</strong></a></span><span class="enlaces"><a>Qué hacer si perdiste o encontraste</a><a>Términos</a><a>Privacidad</a></span></footer>
       </div></div>
     </div>
   </section>
@@ -1621,7 +1650,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.02
   <!-- ═══ Compartir ═════════════════════════════════════════════════════ -->
   <section class="seccion" aria-labelledby="s-compartir">
     <div class="seccion__titulo"><h2 id="s-compartir">Compartir: las tres piezas</h2><div class="regla"></div><div class="rango">21 — 23</div></div>
-    <p class="seccion__bajada">Cada pieza lleva el nombre del sitio y, chico, «Un proyecto de bagayí»: es el retorno de marketing. La imagen y la historia las genera <code>@vercel/og</code>; el afiche es una página que se imprime. Se muestran achicadas; al lado de cada una, su tamaño real.</p>
+    <p class="seccion__bajada">Cada pieza lleva el nombre del sitio y, chico, «Un proyecto de bagayí» con el logo de bagayí: es el retorno de marketing. La imagen y la historia las genera <code>@vercel/og</code>; el afiche es una página que se imprime. Se muestran achicadas; al lado de cada una, su tamaño real.</p>
 
     <div class="fila-pantallas" style="margin-top:26px;align-items:flex-start">
       <div class="pantalla">
@@ -1634,7 +1663,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.02
             <div class="og__senas">Perra mediana · caramelo · collar rojo</div>
             <div class="og__dato" style="margin-top:26px"><svg class="i"><use href="#i-pin"/></svg>Pocitos, Montevideo</div>
             <div class="og__dato"><svg class="i"><use href="#i-reloj"/></svg>Desde el sábado 26 de setiembre</div>
-            <div class="og__pie"><span class="isotipo"><svg><use href="#isotipo"/></svg></span>volveacasa.uy<small>Un proyecto de bagayí</small></div>
+            <div class="og__pie"><span class="isotipo"><svg><use href="#isotipo"/></svg></span>volveacasa.uy<small class="credito-bagayi">Un proyecto de <svg viewBox="0 0 440 360" aria-hidden="true"><use href="#bagayi"/></svg><strong>bagayí</strong></small></div>
           </div>
         </div></div>
         <div class="pieza" style="zoom:.32;margin-top:18px"><div class="og t-resuelto">
@@ -1644,7 +1673,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.02
             <div class="og__nombre">Mora</div>
             <div class="og__senas">Gata negra · Punta Carretas</div>
             <div class="og__dato" style="margin-top:26px"><svg class="i"><use href="#i-corazon"/></svg>Volvió a los 4 días. ¡Gracias!</div>
-            <div class="og__pie"><span class="isotipo"><svg><use href="#isotipo"/></svg></span>volveacasa.uy<small>Un proyecto de bagayí</small></div>
+            <div class="og__pie"><span class="isotipo"><svg><use href="#isotipo"/></svg></span>volveacasa.uy<small class="credito-bagayi">Un proyecto de <svg viewBox="0 0 440 360" aria-hidden="true"><use href="#bagayi"/></svg><strong>bagayí</strong></small></div>
           </div>
         </div></div>
       </div>
@@ -1657,15 +1686,15 @@ h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.02
           <div class="historia__nombre">Canela</div>
           <div class="historia__senas">Perra mediana, caramelo,<br>collar rojo con chapita</div>
           <div class="historia__dato"><svg class="i" style="color:var(--perdido)"><use href="#i-pin"/></svg>Pocitos · desde el sáb 26/9</div>
-          <div class="historia__pie"><span class="logo"><span class="isotipo"><svg><use href="#isotipo"/></svg></span>volveacasa.uy</span><small>Si la ves, avisá ahí · Un proyecto de bagayí</small></div>
+          <div class="historia__pie"><span class="logo"><span class="isotipo"><svg><use href="#isotipo"/></svg></span>volveacasa.uy</span><small>Si la ves, avisá ahí</small><small class="credito-bagayi">Un proyecto de <svg viewBox="0 0 440 360" aria-hidden="true"><use href="#bagayi"/></svg><strong>bagayí</strong></small></div>
           <div class="zona-segura" style="bottom:0;height:250px">zona que tapa Instagram</div>
         </div></div>
       </div>
 
       <div class="pantalla">
-        <div><div class="pantalla__rotulo">23 · Afiche A4 para imprimir</div><div class="pantalla__nota">«SE BUSCA» enorme, foto, señas, visto por última vez, el teléfono (el afiche es de quien publicó, que eligió ponerlo), un QR al aviso y tiritas para arrancar. Sin fondos de color: la mayoría de las impresoras no los imprime. Portal al <code>&lt;body&gt;</code> y <code>display:none</code> al resto, como la etiqueta de bagayí.</div></div>
-        <div class="pieza" style="zoom:.6"><div class="afiche">
-          <div class="afiche__cuerpo">
+        <div><div class="pantalla__rotulo">23 · Afiches A4 para imprimir</div><div class="pantalla__nota" style="max-width:760px">Uno por tipo: se busca, encontrada y en adopción. Foto grande, lo esencial, el teléfono de quien publicó (que eligió ponerlo) y un QR al aviso. Sin tiritas para arrancar: nadie se las lleva, y la foto y el teléfono ganan ese lugar. El de encontrado se guarda una seña para comprobar al dueño. Sin fondos de color, porque la mayoría de las impresoras no los imprime; portal al <code>&lt;body&gt;</code> y <code>display:none</code> al resto, como la etiqueta de bagayí.</div></div>
+        <div style="display:flex;gap:26px;align-items:flex-start;flex-wrap:wrap">
+          <div class="pieza" style="zoom:.52"><div class="afiche t-perdido"><div class="afiche__cuerpo">
             <div class="afiche__titulo">Se busca</div>
             <div class="afiche__foto"><div class="foto fondo-pared"><svg class="animal a-canela" viewBox="0 0 200 200"><use href="#perro"/></svg></div></div>
             <div class="afiche__nombre">Canela</div>
@@ -1680,19 +1709,40 @@ h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: -.02
               </div>
               <div class="afiche__qr"><svg class="qr" data-semilla="canela-pocitos-x7k2" role="img" aria-label="Código QR al aviso"></svg><span>Mirá dónde la vieron</span><b>volveacasa.uy/a/x7k2</b></div>
             </div>
-            <div class="afiche__marca"><span>volveacasa.uy · el sitio para encontrar mascotas en Uruguay</span><span>Un proyecto de bagayí</span></div>
-          </div>
-          <div class="tiritas">
-            <div class="tirita"><b>Canela · 099 123 456</b><span>volveacasa.uy/a/x7k2</span></div>
-            <div class="tirita"><b>Canela · 099 123 456</b><span>volveacasa.uy/a/x7k2</span></div>
-            <div class="tirita"><b>Canela · 099 123 456</b><span>volveacasa.uy/a/x7k2</span></div>
-            <div class="tirita"><b>Canela · 099 123 456</b><span>volveacasa.uy/a/x7k2</span></div>
-            <div class="tirita"><b>Canela · 099 123 456</b><span>volveacasa.uy/a/x7k2</span></div>
-            <div class="tirita"><b>Canela · 099 123 456</b><span>volveacasa.uy/a/x7k2</span></div>
-            <div class="tirita"><b>Canela · 099 123 456</b><span>volveacasa.uy/a/x7k2</span></div>
-            <div class="tirita"><b>Canela · 099 123 456</b><span>volveacasa.uy/a/x7k2</span></div>
-          </div>
-        </div></div>
+            <div class="afiche__marca"><span>volveacasa.uy</span><span class="credito-bagayi">Un proyecto de <svg viewBox="0 0 440 360" aria-hidden="true"><use href="#bagayi"/></svg><strong>bagayí</strong></span></div></div></div></div>
+          <div class="pieza" style="zoom:.52"><div class="afiche t-encontrado"><div class="afiche__cuerpo">
+            <div class="afiche__titulo" style="--tam-titulo:124px">Encontrada</div>
+            <div class="afiche__bajada">¿Es tuya? La tengo conmigo.</div>
+            <div class="afiche__foto" style="margin-top:18px"><div class="foto fondo-azul"><svg class="animal a-gris" viewBox="0 0 200 200"><use href="#gato"/></svg></div></div>
+            <div class="afiche__nombre" style="font-size:58px">Gata atigrada gris</div>
+            <p class="afiche__senas">Muy mansa, sin collar. Anda bien y está comiendo.</p>
+            <div class="afiche__fila">
+              <div>
+                <div class="afiche__rotulo">La encontré en</div>
+                <div class="afiche__dato">Cordón · lunes 28/9</div>
+                <div class="afiche__rotulo">Si es tuya, llamá o escribí</div>
+                <div class="afiche__tel">098 765 432</div>
+                <p class="afiche__nota">Para devolvértela te voy a pedir fotos o una seña que no esté en este afiche.</p>
+              </div>
+              <div class="afiche__qr"><svg class="qr" data-semilla="gata-cordon-q3m8" role="img" aria-label="Código QR al aviso"></svg><span>Mirá el aviso</span><b>volveacasa.uy/a/q3m8</b></div>
+            </div>
+            <div class="afiche__marca"><span>volveacasa.uy</span><span class="credito-bagayi">Un proyecto de <svg viewBox="0 0 440 360" aria-hidden="true"><use href="#bagayi"/></svg><strong>bagayí</strong></span></div></div></div></div>
+          <div class="pieza" style="zoom:.52"><div class="afiche t-adopcion"><div class="afiche__cuerpo">
+            <div class="afiche__titulo" style="--tam-titulo:116px">En adopción</div>
+            <div class="afiche__foto"><div class="foto fondo-pasto"><svg class="animal a-tito" viewBox="0 0 200 200"><use href="#perro"/></svg></div></div>
+            <div class="afiche__nombre">Tito</div>
+            <p class="afiche__senas">Dos años, castrado y vacunado. Se lleva bien con gatos y con chicos. Busca una familia para siempre.</p>
+            <div class="afiche__fila">
+              <div>
+                <div class="afiche__rotulo">Lo da en adopción</div>
+                <div class="afiche__dato">Protectora Rabo Alegre · Buceo</div>
+                <div class="afiche__rotulo">Para conocerlo, escribinos</div>
+                <div class="afiche__tel">091 234 567</div>
+              </div>
+              <div class="afiche__qr"><svg class="qr" data-semilla="tito-buceo-r5n1" role="img" aria-label="Código QR al aviso"></svg><span>Conocé su historia</span><b>volveacasa.uy/a/r5n1</b></div>
+            </div>
+            <div class="afiche__marca"><span>volveacasa.uy</span><span class="credito-bagayi">Un proyecto de <svg viewBox="0 0 440 360" aria-hidden="true"><use href="#bagayi"/></svg><strong>bagayí</strong></span></div></div></div></div>
+        </div>
       </div>
     </div>
   </section>

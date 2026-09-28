@@ -1,8 +1,8 @@
 # Tokens de Volvé a casa
 
-> **Estado: propuesta, esperando la aprobación del dueño** (BRIEF §2, paso 1).
-> Cuando la apruebe, este archivo pasa a decir «aprobados el <fecha>» y los
-> valores van tal cual a `src/styles/tokens.css`.
+> **Aprobados por el dueño el 2026-09-28**, junto con la maqueta (BRIEF §2,
+> paso 1). La marca es la frambuesa. Estos valores van tal cual a
+> `src/styles/tokens.css`.
 
 La fuente de verdad visual es [`Maqueta.html`](Maqueta.html): sus `:root` son
 estos tokens. Las medidas de abajo salen de un comando, no de una planilla:
