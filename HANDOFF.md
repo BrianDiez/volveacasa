@@ -25,7 +25,7 @@ herramienta de búsqueda. El diseño completo y las decisiones cerradas están e
 |---|---|---|
 | 1 · Maqueta y paleta | **Aprobado por el dueño el 2026-09-28**, con cambios ya aplicados | `design-src/Maqueta.html`; `node design-src/contrastes.mjs` sale con 0 |
 | 2 · Infraestructura | **Hecho el 2026-09-28** | la tabla de abajo |
-| 3 · Spec del núcleo | Pendiente | `docs/superpowers/specs/` |
+| 3 · Spec del núcleo | **Aprobado por el dueño el 2026-09-28** | `docs/superpowers/specs/2026-09-28-nucleo-design.md` |
 | 4 · Plan | Pendiente | `docs/superpowers/plans/` |
 | 5 · Ejecución | Pendiente | — |
 | 6 · Antes de lanzar | Pendiente | BRIEF §2, paso 6 |
@@ -214,5 +214,8 @@ lecciones caras de bagayí, en el BRIEF §9.3. Lo que más cuesta olvidar:
 ### Al cierre del 2026-09-28
 
 1. Paso 2 cerrado: repo, Vercel y la URL respondiendo 200.
-2. Paso 3: el spec del núcleo, en una rama, con las decisiones del §7 de este
-   documento. Lo que quedó abierto se le pregunta al dueño de a una pregunta.
+2. Paso 3 cerrado: el spec del núcleo, aprobado, con las cinco preguntas
+   respondidas (proveedor de mapas, denuncias, redes, métricas y zonas) y la
+   zona social descrita en su §8.1. Las decisiones del §7 de este documento ya
+   están todas en el spec.
+3. Paso 4: el plan por fases, desde el spec, con `writing-plans`.

@@ -1,6 +1,7 @@
 # Volvé a casa — spec del núcleo
 
-> **Estado: completo, esperando la aprobación del dueño** (BRIEF §2, paso 3).
+> **Estado: aprobado por el dueño el 2026-09-28** (BRIEF §2, paso 3). Al
+> aprobarlo pidió que la zona social tuviera su sección: es el §8.1.
 > Junta los §3 a §8 del brief, lo que decidió la maqueta aprobada el 2026-09-28
 > y lo que decidió el dueño ese día. Donde este documento cambia el brief, lo
 > dice. Las cinco preguntas que quedaban abiertas ya están respondidas (§10).
@@ -349,7 +350,57 @@ quien no es admin. Apagar no borra nada.
 | `veterinarias` | directorio en el mapa, con aprobación manual | apagado, sin pantallas |
 | `marketplace_servicios` | paseadores y peluquería por zona | apagado, sin pantallas |
 | `marketplace_productos` | tienda con Mercado Pago | apagado, sin pantallas |
-| `historias` | *nuevo, del dueño.* Zona **pública**: se ven las fotos y los nombres de los animales adoptados, y al tocar uno, su historia y cómo le va con su familia. Incentiva la adopción responsable | apagado; el núcleo sólo deja el enganche del §3 |
+| `historias` | *nuevo, del dueño.* Zona **pública**: se ven las fotos y los nombres de los animales adoptados, y al tocar uno, su historia y cómo le va con su familia. Incentiva la adopción responsable (§8.1) | apagado; el núcleo deja el enganche del §3 y lo del §8.1 |
+
+### 8.1 · Historias (módulo `historias`)
+
+*Nuevo, del dueño (2026-09-28): una zona social que presente a cada animal y
+cuente cómo le va con su familia, para incentivar la adopción responsable.* Es
+un módulo aparte con su propio spec después del núcleo; esta sección fija lo que
+el dueño ya decidió y lo que el núcleo tiene que dejar preparado.
+
+**Lo que ya está decidido:**
+
+- **Es pública.** Sin cuenta se ve todo: una grilla con la **foto y el nombre**
+  de cada animal, y al tocar uno, **su historia**. Rutas `/historias` y
+  `/historias/<nombre>-<id_corto>`, con vista previa para compartir como un aviso.
+- **La página de un animal** cuenta de dónde viene (el aviso de adopción, con su
+  foto de entonces), cómo llegó a su familia, y cómo le va: texto y fotos nuevas,
+  que se pueden sumar con el tiempo («a los 3 meses», «al año»). Muestra hace
+  cuánto está en casa.
+- **Lo que no muestra:** ni la ubicación de la familia (a lo sumo, la zona) ni
+  datos de las personas. Es la historia del animal. Las fotos se achican y
+  pierden el EXIF como las demás.
+
+**Lo que el núcleo deja preparado:**
+
+- El aviso de adopción resuelto no se borra nunca: conserva fotos, nombre y
+  datos para que la historia lo enlace.
+- La pantalla de resolver (M15), con el módulo prendido, invita a contar cómo le
+  va; apagado, no dice nada.
+- La entrada `historias` en `src/lib/modulos.js` y en la tabla `modulos`,
+  apagada.
+
+**Lo que decide su spec** (con recomendación, para no perderlas):
+
+1. **Quién la escribe.** Quien publicó la adopción (muchas veces una protectora)
+   no es quien adoptó. *Recomendación:* la escribe la protectora o quien publicó,
+   y puede mandarle a quien adoptó un link de invitación para que sume fotos
+   desde su cuenta.
+2. **Moderación.** Son fotos y textos públicos con la marca. *Recomendación:*
+   aprobación manual del admin antes de publicarse, como los negocios de los otros
+   módulos; cada foto nueva también.
+3. **¿Aparece en el inicio?** Los módulos no van en el inicio ni en el feed, pero
+   esa regla se pensó para lo comercial. *Recomendación:* sí, una tira de
+   «Encontraron familia» como la de «Volvieron a casa».
+4. **¿Entran también los reencuentros** (perdidos que volvieron), o sólo las
+   adopciones? *Recomendación:* empezar por las adopciones, que es el objetivo, y
+   sumar reencuentros si funciona.
+
+**Datos (boceto para su spec):** `historias` (aviso de adopción, autor, texto,
+estado `en_revision` \| `publicada` \| `oculta`), `actualizaciones_historia`
+(texto y fecha) y sus fotos en el bucket `fotos`. Las tablas exigen
+`modulo_activo('historias')` a quien no es admin, como todo módulo.
 
 **Flags que no son módulos** (misma pantalla del admin, otra sección):
 
@@ -466,5 +517,5 @@ Las del BRIEF §2, paso 4; cada una deja algo desplegable, en su rama.
 6. **Admin:** tablero, moderación, usuarios, módulos y flags.
 7. **Vencimiento:** automático, con recordatorios por cron.
 
-Después del núcleo, cada uno con su spec: `redes_automaticas`, `historias`,
-`veterinarias`, `marketplace_servicios`, `marketplace_productos`.
+Después del núcleo, cada uno con su spec: `redes_automaticas`, `historias`
+(§8.1), `veterinarias`, `marketplace_servicios`, `marketplace_productos`.
