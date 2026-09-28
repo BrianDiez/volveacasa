@@ -24,7 +24,7 @@ herramienta de búsqueda. El diseño completo y las decisiones cerradas están e
 | Paso | Estado | Cómo verificarlo |
 |---|---|---|
 | 1 · Maqueta y paleta | **Aprobado por el dueño el 2026-09-28**, con cambios ya aplicados | `design-src/Maqueta.html`; `node design-src/contrastes.mjs` sale con 0 |
-| 2 · Infraestructura | **En curso**: falta el repo en GitHub y el proyecto en Vercel (§4) | la tabla de abajo |
+| 2 · Infraestructura | **Hecho el 2026-09-28** | la tabla de abajo |
 | 3 · Spec del núcleo | Pendiente | `docs/superpowers/specs/` |
 | 4 · Plan | Pendiente | `docs/superpowers/plans/` |
 | 5 · Ejecución | Pendiente | — |
@@ -36,7 +36,7 @@ herramienta de búsqueda. El diseño completo y las decisiones cerradas están e
 |---|---|---|
 | `npm run dev` muestra en `:5174` el layout con la paleta aprobada | ✅ 2026-09-28, abierto a 375 y 1280 | `npm run dev` y abrir `http://localhost:5174` |
 | `npm test` y `npm run build` en verde | ✅ 2026-09-28 | `npm test && npm run build` |
-| El push a `main` desplegó y la URL responde 200 | ❌ falta el repo | `curl -sI https://<proyecto>.vercel.app` |
+| El push a `main` desplegó y la URL responde 200 | ✅ 2026-09-28 | `curl -s -o /dev/null -w "%{http_code}" https://volveacasa-henna.vercel.app/` |
 | `select postgis_version()` por MCP contra el proyecto nuevo | ✅ 2026-09-28: PostGIS 3.3 | `select extensions.postgis_version();` |
 | El HANDOFF dice contra qué base corre `npm run dev` | ✅ | §3 |
 
@@ -47,7 +47,7 @@ npm test                              # conteo de tests y de archivos
 npm run build
 npm audit
 ls supabase/migrations/*.sql | wc -l  # migraciones en disco
-git log -1 --oneline                  # dónde está la rama
+git log -1 --oneline origin/main      # qué está desplegado
 ```
 
 ```sql
@@ -76,23 +76,26 @@ select extensions.postgis_version();
 
 ---
 
-## 4 · Lo que falta del paso 2
+## 4 · Repo, deploy y herramientas
 
-1. **Repo en GitHub, privado, bajo `BrianDiez`.** En esta máquina no están
-   instalados `gh` ni `vercel`, y el conector de GitHub no está autorizado, así
-   que no hay forma de crearlo desde la sesión. Hace falta que el dueño cree
-   `BrianDiez/volveacasa` vacío (privado, sin README) en github.com/new. Después
-   se sube con:
-   ```bash
-   git remote add origin https://github.com/BrianDiez/volveacasa.git
-   git push -u origin main
-   ```
-2. **Proyecto Vercel** en el team *brian diez's projects*
-   (`team_rOEiOvTu6ppAWtHVhFEOTXVQ`, el mismo `orgId` de `bagayi/.vercel`),
-   conectado a ese repo: con el conector de Vercel (`create_git_project`), una vez
-   que el repo exista.
-3. **`vercel dev` en el 3001**: no está instalado; el proxy de `/api` ya apunta
-   ahí (`vite.config.js`). Hace falta recién cuando haya funciones en `/api`.
+- **GitHub:** `BrianDiez/volveacasa`, privado. Lo creó el dueño el 2026-09-28 (en
+  esta máquina no hay `gh` y el conector de GitHub no está autorizado). El push
+  anda con el administrador de credenciales de Git.
+- **Vercel:** proyecto `volveacasa` (`prj_OkuXgLFaBmPwvNaYxDUqAPHhAo4Z`) en el team
+  *brian diez's projects* (`team_rOEiOvTu6ppAWtHVhFEOTXVQ`), conectado al repo,
+  rama de producción `main`. **Un push a `main` despliega a producción.**
+- **URL:** https://volveacasa-henna.vercel.app (hasta que haya dominio, BRIEF §2
+  paso 6). Qué está desplegado se mide con el conector de Vercel
+  (`list_deployments` del proyecto) o con `git log -1 origin/main`.
+- **La CSP y `Permissions-Policy` sólo se aplican desplegado** (`npm run dev` no
+  lee `vercel.json`). Verificado el 2026-09-28: la home carga fuentes y chunks
+  sin violaciones, y `geolocation=(self)` llega en los headers.
+- **Falta para el paso 5:** con qué se abren los PR. Sin `gh` ni el conector de
+  GitHub, las ramas se pueden subir pero no abrir el PR desde la sesión. Opciones:
+  autorizar el conector de GitHub en claude.ai, o instalar `gh` y que el dueño
+  haga `gh auth login`.
+- **`vercel dev` en el 3001:** no está instalado; el proxy de `/api` ya apunta
+  ahí (`vite.config.js`). Hace falta recién cuando haya funciones en `/api`.
 
 ---
 
@@ -174,7 +177,10 @@ Se escriben en el spec del núcleo (paso 3). Anotadas el 2026-09-28:
 - **Publicación automática en las redes de Volvé a casa: sólo los perdidos.** Va
   en el spec detrás de un flag apagado. Abierto: cómo se modera antes de salir.
 - **Una zona social:** el animal presentado, con cómo le va con su familia, para
-  incentivar la adopción responsable. Abierto: alcance y si es núcleo o módulo.
+  incentivar la adopción responsable. **Decidido:** es un módulo aparte, con su
+  propio spec después del núcleo, y **público**: quien entra ve las fotos y los
+  nombres de los animales, y al tocar uno lee su historia. El núcleo deja el
+  enganche: al marcar «¡Encontró familia!», invita a contar cómo le va.
 
 ---
 
@@ -207,7 +213,6 @@ lecciones caras de bagayí, en el BRIEF §9.3. Lo que más cuesta olvidar:
 
 ### Al cierre del 2026-09-28
 
-1. El dueño crea `BrianDiez/volveacasa` (§4.1). Push de `main`, proyecto Vercel
-   conectado, y verificar que la URL responde 200. Ahí cierra el paso 2.
-2. Paso 3: el spec del núcleo, con las decisiones del §7 de este documento. Lo
-   que quedó abierto se le pregunta al dueño de a una pregunta.
+1. Paso 2 cerrado: repo, Vercel y la URL respondiendo 200.
+2. Paso 3: el spec del núcleo, en una rama, con las decisiones del §7 de este
+   documento. Lo que quedó abierto se le pregunta al dueño de a una pregunta.
