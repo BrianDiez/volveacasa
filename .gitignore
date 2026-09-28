@@ -1,0 +1,8 @@
+node_modules
+dist
+# Cualquier variante de .env, no sólo el nombre exacto: un `.env.backup` o un
+# `.env.produccion` no los matchea `.env` a secas, y ahí adentro va la
+# SUPABASE_SERVICE_ROLE_KEY (que saltea la RLS). Mismo criterio que bagayí.
+.env*
+!.env.example
+.vercel
