@@ -152,7 +152,7 @@ repite para dar buenos mensajes. PostGIS está en el esquema `extensions`.
 | `modulos` | `clave`, `activo`, `cambiado_por`, `cambiado_en` + `modulo_activo(clave)` | pública |
 | `configuracion` | `clave`, `valor` (jsonb), `actualizado_en` | pública; escribe sólo el admin |
 | `consentimientos` | patrón de bagayí | autor |
-| `eventos` | `tipo` (`contacto` \| `compartir` \| `mapa`), `canal`, `aviso_id`, fecha. Sin datos personales; sólo se inserta | admin |
+| `eventos` | `tipo` (`contacto` \| `compartir` \| `mapa` \| `llegada` \| `bagayi`), `canal`, `aviso_id`, fecha. Sin datos personales ni IP; sólo se inserta, y sólo por la función `registrar_evento` (§7) | admin |
 | `cuotas` | el contador de `consumir_cuota` de bagayí, para el límite por IP | ninguna |
 
 Bucket público **`fotos`**, una carpeta por aviso o avistamiento, con tope de
@@ -278,7 +278,29 @@ Como el BRIEF §7, con esto cerrado:
 
 ## 7 · Métricas
 
-Las del BRIEF §12. Ver §10, pregunta 4, sobre de dónde salen.
+Las del BRIEF §12, **medidas sólo con datos propios**: sin servicios de
+analítica externos, sin cookies y sin datos personales, así que no hace falta
+cartel de consentimiento (decisión del dueño, 2026-09-28).
+
+| Métrica | De dónde sale |
+|---|---|
+| **Estrella:** avisos resueltos por mes | `avisos.resuelto_en` y `resolucion` |
+| Avistamientos por semana; % de perdidos con al menos uno; cuántos de esos volvieron a casa | `avistamientos` y `avisos` (más `ayudo_avistamiento`) |
+| % de avisos compartidos al menos una vez; compartidos por canal | `eventos` tipo `compartir`, con `canal` |
+| Clics en Contactar | `eventos` tipo `contacto` (lo registra `/api/contacto`) |
+| Sesiones que abren el mapa | `eventos` tipo `mapa`: **uno por sesión** (se marca en `sessionStorage`), no uno por cada movimiento |
+| Visitas que llegan por links compartidos | `eventos` tipo `llegada`: el componente `Compartir` agrega al link una marca corta de canal (`?c=wa`, `?c=ig`, `?c=fb`, `?c=link`, `?c=qr` en los afiches) y la visita que entra con ella se registra una vez por sesión |
+| Clics a bagayí desde el pie | `eventos` tipo `bagayi` (además del UTM, que mide bagayí de su lado) |
+
+- **Nada de eventos por INSERT directo:** la tabla no tiene policy de insert. Se
+  escribe sólo con la RPC `registrar_evento(tipo, canal, aviso_id)`, que valida
+  tipo y canal contra una lista, verifica que el aviso exista y aplica un límite
+  por IP con `consumir_cuota`. La IP se usa para el límite y no se guarda en el
+  evento.
+- **Tamaño:** cada fila son unos cien bytes; el plan gratis tiene 500 MB de base.
+  Si algún día pesa, se agrega por día y se borra el detalle viejo.
+- Si la tabla se queda corta (páginas vistas, de dónde viene la gente), se suma
+  después una analítica sin cookies (Plausible, Umami o la de Vercel).
 
 ---
 
@@ -368,9 +390,9 @@ diseñado y apagado; su fase va después de Compartir.
    cola que el admin aprueba con un toque, con las protectoras verificadas
    saliendo directo; lo que no se aprueba en 12 horas no sale (§9). Descartadas:
    que saliera todo directo, o sólo lo de protectoras.
-4. **Analítica** (BRIEF §10.7). **Recomendación:** empezar sólo con la tabla
-   `eventos` propia (sin cookies ni datos personales), que cubre las métricas del
-   brief, y sumar una analítica sin cookies después si hace falta.
+4. **Analítica** (BRIEF §10.7). **Decidido el 2026-09-28:** sólo la tabla
+   `eventos` propia, sin servicios externos (§7). Una analítica sin cookies queda
+   para después, si hace falta.
 5. **Zona fuera de Montevideo.** Sólo Montevideo tiene barrios oficiales.
    **Recomendación:** usar las localidades del INE para el resto del país (Ciudad
    de la Costa, Las Piedras, Maldonado…), así un aviso de Canelones no queda sólo
