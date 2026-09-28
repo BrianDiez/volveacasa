@@ -1,0 +1,424 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Volvé a casa — sistema visual
+   Los valores salen de la maqueta aprobada el 2026-09-28
+   (design-src/Maqueta.html; medidas en design-src/TOKENS.md). No inventar
+   colores nuevos: usar estos. `tokens.test.js` falla si se separan de los que
+   mide `design-src/contrastes.mjs`.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Marca: frambuesa. Va SÓLO en acciones —botones, links y navegación—.
+     La terracota del brief se descartó: medida con ΔE2000 quedaba a 3,5 de
+     AVISTADO. */
+  --marca:              #BE185D;
+  --marca-hover:        #9D174D;
+  --marca-tenue:        #FCE7F3;
+  --marca-fondo:        #FDF2F8;
+  --marca-sobre-oscuro: #F472B6;
+
+  /* Tinta y texto. Los grises de bagayí NO: #64748B sobre el fondo da 4,37. */
+  --tinta:        #231A15;
+  --texto:        #6B5E55;
+  --texto-suave:  #7A6D65;
+
+  /* Superficies y bordes (los de bagayí) */
+  --fondo:        #F7F5F0;
+  --fondo-canvas: #EFEBE3;
+  --panel:        #FFFFFF;
+  --panel-tenue:  #FCFBF8;
+  --gris-suave:   #F2F0EA;
+  --borde:        #E8E4DC;
+  --borde-fuerte: #D6D0C3;
+
+  /* Estados: SÓLO en cintas, insignias y marcadores, y siempre con texto e
+     ícono (lupa, ojo, huella, corazón, casita). */
+  --perdido:    #B42318;  --perdido-fondo:    #FEE4E2;
+  --avistado:   #B54708;  --avistado-fondo:   #FEF0C7;
+  --encontrado: #175CD3;  --encontrado-fondo: #D1E9FF;
+  --adopcion:   #6941C6;  --adopcion-fondo:   #EBE9FE;
+  --resuelto:   #067647;  --resuelto-fondo:   #DCFAE6;
+  --grupo:      #231A15;
+
+  /* Mensajes del sistema. Son alias, no colores nuevos: un error se pinta
+     con el rojo de perdido, un aviso con el ámbar, lo que salió bien con el
+     verde de resuelto. */
+  --error:        var(--perdido);
+  --error-fondo:  var(--perdido-fondo);
+  --alerta:       var(--avistado);
+  --alerta-fondo: var(--avistado-fondo);
+  --info:         var(--encontrado);
+  --info-fondo:   var(--encontrado-fondo);
+  --exito:        var(--resuelto);
+  --exito-fondo:  var(--resuelto-fondo);
+
+  /* WhatsApp: su verde con texto oscuro (con blanco da 1,98). */
+  --whatsapp:       #25D366;
+  --whatsapp-texto: #0B3D2E;
+
+  /* Mapa: contra estos dos se midieron los marcadores (mínimo 3:1). */
+  --mapa-tierra: #F2EFE9;
+  --mapa-agua:   #D8E6EC;
+
+  /* Tipografía (la de bagayí). Archivo tiene eje de ancho: las cintas, el
+     afiche y las imágenes lo usan angosto. */
+  --display: 'Archivo', system-ui, sans-serif;
+  --cuerpo:  'Instrument Sans', system-ui, sans-serif;
+
+  /* Radios */
+  --r-sm: 8px;
+  --r:    11px;
+  --r-md: 13px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --r-pastilla: 999px;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--tinta);
+  font-family: var(--cuerpo);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--marca); text-decoration: none; }
+a:hover { color: var(--marca-hover); text-decoration: underline; }
+::selection { background: var(--marca-tenue); }
+
+input, button, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+
+h1, h2, h3 {
+  font-family: var(--display);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin: 0;
+  text-wrap: pretty;
+}
+h1 { font-size: 28px; }
+h2 { font-size: 20px; }
+h3 { font-size: 16px; letter-spacing: -0.01em; }
+
+/* ── Utilidades compartidas ────────────────────────────────────────────── */
+.contenedor { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* El ritmo vertical de una pantalla, en un solo lugar (bagayí: sin esto, el
+   de abajo se olvidaba y el contenido quedaba pegado al pie). */
+.pagina { padding-top: 32px; padding-bottom: 48px; }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-lg);
+}
+
+.etiqueta-seccion {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.silencio { color: var(--texto); }
+.silencio-mas { color: var(--texto-suave); }
+
+.cifra {
+  font-family: var(--display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.fila { display: flex; align-items: center; gap: 10px; }
+.crece { flex: 1; min-width: 0; }
+.truncar { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── Estados: la clase pone el color, el componente decide dónde ─────────
+   `t-perdido` en una tarjeta pinta su cinta; en un marcador, el marcador. */
+.t-perdido    { --c: var(--perdido);    --cf: var(--perdido-fondo); }
+.t-avistado   { --c: var(--avistado);   --cf: var(--avistado-fondo); }
+.t-encontrado { --c: var(--encontrado); --cf: var(--encontrado-fondo); }
+.t-adopcion   { --c: var(--adopcion);   --cf: var(--adopcion-fondo); }
+.t-resuelto   { --c: var(--resuelto);   --cf: var(--resuelto-fondo); }
+
+.insignia {
+  display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 9px 0 7px;
+  border-radius: 999px; font-size: 11.5px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; background: var(--cf, var(--gris-suave)); color: var(--c, var(--tinta));
+  white-space: nowrap;
+}
+
+/* La cinta: el rótulo de estado pegado sobre la foto como la cinta de papel
+   de los carteles de la calle. Opaca, con texto e ícono: nunca sólo color. */
+.cinta {
+  position: absolute; top: 12px; left: -3px; z-index: 2;
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 15px 6px 12px;
+  background: var(--c); color: #fff;
+  font-family: var(--display); font-weight: 800; font-stretch: 80%; font-size: 13.5px;
+  letter-spacing: .07em; text-transform: uppercase; line-height: 1.1;
+  transform: rotate(-2.5deg); transform-origin: left center;
+  clip-path: polygon(0 0, 100% 0, 97.5% 20%, 100% 40%, 97% 60%, 100% 80%, 97.5% 100%, 0 100%);
+}
+
+/* ── Inicio: las cuatro entradas (maqueta 01 y 18) ─────────────────────────
+   Cuatro en fila en escritorio, apiladas en el teléfono con el ícono al
+   costado. Clase y no inline: tiene que cambiar de estructura por media query. */
+.entradas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.entrada {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 14px; padding: 18px;
+  background: var(--panel); border: 1px solid var(--borde); border-radius: var(--r-lg);
+  color: var(--tinta); text-decoration: none; transition: border-color .12s;
+}
+.entrada:hover { border-color: var(--marca); color: var(--tinta); text-decoration: none; }
+.entrada__ico {
+  width: 44px; height: 44px; border-radius: 13px; flex: none;
+  background: var(--marca-tenue); color: var(--marca); display: grid; place-items: center;
+}
+.entrada__titulo { display: block; font-family: var(--display); font-weight: 700; font-size: 15.5px; letter-spacing: -.01em; }
+.entrada__bajada { display: block; font-size: 13px; color: var(--texto); margin-top: 2px; line-height: 1.35; }
+
+/* ── Layout de dos columnas (contenido + lateral) ───────────────────────────
+   Va como clase y no inline porque los estilos inline ganan siempre a las
+   media queries: sin esto no habría forma de colapsarlo en el teléfono. */
+.dos-col {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--lateral, 400px);
+  gap: var(--gap-col, 32px);
+  align-items: start;
+}
+.lateral { position: sticky; top: 82px; }
+
+/* ── Feed: filtros al costado ─────────────────────────────────────────────── */
+.con-filtros {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  gap: 26px;
+  align-items: start;
+}
+.panel-filtros {
+  position: sticky;
+  top: 82px;
+  background: var(--panel);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-lg);
+  padding: 6px 18px 14px;
+  overflow-wrap: break-word;
+}
+/* El botón que abre la hoja de filtros: sólo teléfono. */
+.abrir-filtros { display: none; }
+
+/* ── Header de escritorio ───────────────────────────────────────────────── */
+.cabecera {
+  position: sticky; top: 0; z-index: 60;
+  background: var(--tinta); color: #fff;
+}
+.cabecera__fila { height: 66px; display: flex; align-items: center; gap: 40px; }
+.cabecera nav { display: flex; gap: 28px; align-self: stretch; }
+.cabecera nav a {
+  display: flex; align-items: center; color: #DDD3CB;
+  font-size: 14.5px; font-weight: 500; text-decoration: none;
+}
+.cabecera nav a:hover { color: #fff; }
+.cabecera nav a.active { color: #fff; box-shadow: inset 0 -3px 0 var(--marca-sobre-oscuro); }
+.cabecera__der { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+
+/* ── Barra de tabs inferior (sólo teléfono) ────────────────────────────────
+   Cinco como máximo: un sexto tab los aprieta a 46 px y rompe el área táctil
+   (bagayí §7). `Layouts.test.jsx` lo verifica. */
+.tabbar { display: none; }
+.con-tabbar { padding-bottom: 60px; }
+
+/* ── Pie ───────────────────────────────────────────────────────────────── */
+.pie { background: var(--tinta); color: #CFC5BD; font-size: 13.5px; }
+.pie a { color: #CFC5BD; }
+.pie a:hover { color: #fff; }
+/* Sólo padding vertical: el lateral es el de .contenedor, y un `padding: 26px 0`
+   acá lo pisaba y dejaba el pie pegado al borde del teléfono. */
+.pie__fila { display: flex; align-items: center; gap: 28px; padding-top: 26px; padding-bottom: 26px; flex-wrap: wrap; }
+.pie__enlaces { margin-left: auto; display: flex; gap: 22px; flex-wrap: wrap; }
+
+/* «Un proyecto de bagayí», con el logo chico de bagayí (pedido del dueño,
+   2026-09-28). Sobre la barra oscura el trazo del logo va en blanco. */
+.credito-bagayi { display: inline-flex; align-items: center; gap: .35em; white-space: nowrap; }
+.credito-bagayi a { display: inline-flex; align-items: center; gap: .3em; color: #fff; font-weight: 600; }
+.credito-bagayi strong { font-family: var(--display); font-weight: 700; }
+
+@media (max-width: 980px) {
+  .dos-col { grid-template-columns: 1fr; }
+  .lateral { position: static; }
+  .con-filtros { grid-template-columns: 196px minmax(0, 1fr); gap: 18px; }
+}
+
+@media (max-width: 860px) {
+  .contenedor { padding: 0 16px; }
+  h1 { font-size: 23px; }
+  h2 { font-size: 17.5px; }
+
+  .pagina { padding-top: 22px; padding-bottom: 32px; }
+
+  .con-filtros { grid-template-columns: 1fr; gap: 0; }
+  .panel-filtros { display: none; }
+  .abrir-filtros { display: inline-flex; }
+
+  /* En el teléfono el header es sólo el logo: la navegación baja a la barra. */
+  .cabecera nav, .cabecera__der { display: none; }
+  .cabecera__fila { height: 56px; }
+
+  .pie__fila { flex-direction: column; align-items: flex-start; gap: 12px; padding-top: 22px; padding-bottom: 22px; }
+  .pie__enlaces { margin-left: 0; }
+
+  /* Cualquier grilla de formulario de 2 columnas pasa a una sola. */
+  .campos-2 { grid-template-columns: 1fr !important; }
+
+  .entradas { grid-template-columns: 1fr; gap: 8px; }
+  .entrada { flex-direction: row; align-items: center; gap: 13px; padding: 12px 13px; }
+
+  .tabbar {
+    display: flex;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 50;
+    background: var(--panel);
+    border-top: 1px solid var(--borde);
+    padding: 0 4px calc(env(safe-area-inset-bottom, 0px) + 8px);
+  }
+  .con-tabbar { padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px)); }
+}
+
+.tab {
+  flex: 1; min-width: 0; height: 60px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  font-size: 11px; font-weight: 600; color: var(--texto-suave); text-decoration: none;
+}
+.tab:hover { text-decoration: none; color: var(--tinta); }
+.tab.active { color: var(--marca); }
+/* Publicar, al centro y destacado. */
+.tab--publicar { color: var(--tinta); }
+.tab--publicar .burbuja {
+  width: 54px; height: 54px; margin-top: -24px; border-radius: 50%;
+  background: var(--marca); color: #fff; display: grid; place-items: center;
+  border: 4px solid var(--panel);
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--marca) 35%, transparent);
+}
+
+/* ── Tablas y listas (admin) ─────────────────────────────────────────────── */
+.encabezado-tabla {
+  background: var(--panel-tenue);
+  border-bottom: 1px solid var(--borde);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+.fila-tabla { border-bottom: 1px solid var(--gris-suave); transition: background .12s; }
+.fila-tabla:last-child { border-bottom: 0; }
+.fila-tabla:hover { background: var(--marca-fondo); }
+
+@media (max-width: 860px) {
+  .tabla-responsive > .encabezado-tabla { display: none !important; }
+  .tabla-responsive > .fila-tabla {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px !important;
+    padding: 13px 14px !important;
+  }
+  .tabla-responsive > .fila-tabla > *:first-child { flex: 1 0 100%; }
+  .tabla-responsive > .fila-tabla > * { text-align: left !important; }
+}
+
+/* Scrollbars discretos */
+* { scrollbar-width: thin; scrollbar-color: var(--borde-fuerte) transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--borde-fuerte); border-radius: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* Foco visible: requisito de accesibilidad. */
+:focus-visible {
+  outline: 2px solid var(--marca);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Sólo para lectores de pantalla: invisible pero anunciado. */
+.solo-lectores {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Ventana modal — baja sobre la pantalla, con el fondo opaco
+   ══════════════════════════════════════════════════════════════════════════
+   Va acá y no en `style={{}}` porque tiene animaciones y media queries, y los
+   estilos inline le ganan a las media queries. */
+
+@keyframes modal-fondo-entra {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes modal-panel-baja {
+  from { opacity: 0; transform: translateY(-26px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.modal-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 100;              /* el header sticky usa 60 */
+  background: rgba(35, 26, 21, .55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 44px 16px;
+  overflow-y: auto;
+  animation: modal-fondo-entra .16s ease-out;
+}
+
+.modal-panel {
+  background: var(--panel);
+  border-radius: var(--r-lg);
+  box-shadow: 0 20px 52px rgba(35, 26, 21, .3);
+  width: 100%;
+  animation: modal-panel-baja .22s cubic-bezier(.2, .8, .3, 1);
+}
+
+/* En teléfono ocupa la pantalla entera. */
+@media (max-width: 560px) {
+  .modal-fondo { padding: 0; align-items: stretch; }
+  .modal-panel { border-radius: 0; min-height: 100%; }
+}
+
+/* Quien pidió menos movimiento no tiene por qué ver la ventana caer. */
+@media (prefers-reduced-motion: reduce) {
+  .modal-fondo, .modal-panel { animation: none; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Afiche A4 — sólo existe cuando se imprime (fase Compartir, BRIEF §6)
+   ══════════════════════════════════════════════════════════════════════════
+   El patrón es la etiqueta de envío de bagayí: el afiche se monta por portal
+   directo en el <body>, hermano de #root, y al imprimir se apaga todo lo
+   demás con `display: none`. `visibility: hidden` NO: deja el hueco y salen
+   hojas en blanco detrás (bagayí §6.88). */
+.afiche { display: none; }
+
+@media print {
+  body > *:not(.afiche) { display: none !important; }
+  .afiche { display: block; }
+  @page { size: A4; margin: 0; }
+}

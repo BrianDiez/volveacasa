@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(supabase db push:*)",
+      "Bash(npx supabase db push:*)",
+      "Bash(npm run db:push:*)",
+      "Bash(supabase db reset:*)",
+      "Bash(npx supabase db reset:*)",
+      "Bash(npm run db:reset:*)",
+      "Bash(supabase db push *)",
+      "Bash(npx supabase db push *)",
+      "Bash(supabase db reset *)",
+      "Bash(npx supabase db reset *)"
+    ]
+  },
+  "autoMode": {
+    "environment": [
+      "$defaults",
+      "**Proyecto**: Volvé a casa — sitio de mascotas perdidas, avistadas, encontradas y en adopción en Uruguay, «Un proyecto de bagayí». React + Vite, Supabase con PostGIS, Vercel. Es un proyecto aparte de bagayí (C:\\Users\\brian\\OneDrive\\Escritorio\\bagayi): base, usuarios y repo propios.",
+      "**Repositorio de confianza**: BrianDiez/volveacasa, privado. Rama por defecto: main. Vercel despliega solo con cada push a main, así que un push a main ES un deploy a producción: se trabaja en ramas y se entra por PR.",
+      "**Proyecto Supabase**: blyyywzroyydnusqpzfq.supabase.co (ref blyyywzroyydnusqpzfq, sa-east-1, organización mvxfxhemyepswsjrxjcq). Es la base de PRODUCCIÓN: no hay staging ni Docker en esta máquina (BRIEF §10.4). Cualquier escritura por MCP o SQL cae sobre datos reales. NUNCA confundirla con la de bagayí (cxykycplgmxjkuyqcdux), que también está en la misma organización.",
+      "**Secretos**: viven sólo en archivos .env* (gitignoreados, con excepción de .env.example) y en las variables de entorno de Vercel. SUPABASE_SERVICE_ROLE_KEY saltea la RLS por completo y nunca lleva el prefijo VITE_, porque eso la metería en el bundle del navegador. La URL y la clave publicable de src/lib/respaldo-publico.js son públicas a propósito.",
+      "**`supabase db push` y `supabase db reset` están PROHIBIDOS**: las migraciones se aplican por MCP (apply_migration), que las registra en el historial con su propio timestamp, y además se escriben a disco en supabase/migrations. Un push reaplica desordenado contra producción; un reset la vacía. Correr el SQL a mano en el editor web aplica el cambio pero no lo registra.",
+      "**Datos sensibles en la base**: contactos_aviso guarda el WhatsApp de quien publica (sin lectura pública, a propósito) y auth.users los emails. La ubicación exacta de una persona NO se guarda nunca: la base redondea el punto. Ninguna consulta debería volcar contactos ni emails en masa.",
+      "**Objetivos remotos sensibles**: el proyecto Supabase de arriba y el proyecto Vercel `volveacasa`. El proyecto Supabase `bagayi` y el Vercel `bagayo` son de otro sitio en producción: este repo no los toca."
+    ],
+    "soft_deny": [
+      "$defaults",
+      "Cualquier forma de `supabase db push` o `supabase db reset` contra este proyecto, escrita como sea — con npx, con npm run, precedida de un cd, o dentro de un script. Las reglas de permissions.deny sólo matchean por prefijo; esta entrada atrapa las variantes que se les escapan.",
+      "DELETE, TRUNCATE o DROP contra la base de producción de Supabase: el plan gratis no tiene backups descargables ni branching, así que no hay a dónde volver.",
+      "Cualquier escritura o migración contra el proyecto Supabase de bagayí (cxykycplgmxjkuyqcdux) desde este repo."
+    ]
+  }
+}

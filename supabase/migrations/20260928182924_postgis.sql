@@ -1,0 +1,11 @@
+-- PostGIS, para los puntos del mapa (BRIEF §3.1, §5 y §7).
+--
+-- Va en el esquema `extensions`, como recomienda Supabase: en `public` sus
+-- tablas y funciones quedarían expuestas por la API y los advisors lo marcan.
+-- Por eso las columnas y las funciones de las fases siguientes se escriben con
+-- el esquema delante (`extensions.geography`, `extensions.st_snaptogrid`) o
+-- con `search_path` que lo incluya.
+--
+-- Esta migración se aplicó por MCP (apply_migration) el 2026-09-28. Nunca con
+-- `supabase db push` (ver CLAUDE.md).
+create extension if not exists postgis with schema extensions;
