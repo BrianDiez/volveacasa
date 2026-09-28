@@ -143,8 +143,8 @@ repite para dar buenos mensajes. PostGIS está en el esquema `extensions`.
 |---|---|---|
 | `perfiles` | `id` → auth.users, `nombre`, `tipo` (`persona` \| `protectora`), `verificada`, `rol` (`usuario` \| `admin`), `suspendido`, fechas | pública |
 | `perfiles_privados` | `id` → perfiles, `whatsapp_por_defecto` (E.164). Aparte porque la RLS es por fila: en `perfiles` lo traería cualquier `select=*` | sólo su dueño |
-| `avisos` | `id`, `id_corto`, `autor_id`, `tipo` (`perdido` \| `encontrado` \| `adopcion`), `estado` (`activo` \| `resuelto` \| `vencido` \| `oculto`), `especie` (`perro` \| `gato` \| `otro`), `nombre`, `sexo`, `tamano`, `edad_aprox`, `color`, `senas`, `historia`, `fecha_hecho`, `punto` (geography Point, ya redondeado), `departamento`, `zona`, `recompensa` (sólo perdido), `vence_en`, `resuelto_en`, `resolucion`, `ayudo_sitio`, `ayudo_avistamiento`, fechas | activos y resueltos: pública; vencidos: sólo por su link; ocultos: autor y admin |
-| `avistamientos` | `id`, `id_corto`, `aviso_id` (opcional), `autor_id`, `especie`, `nota` (≤ 140), `foto`, `punto` (redondeado), `visto_en`, `departamento`, `zona`, `estado` (`activo` \| `vencido` \| `oculto`; el vencido lo marca el cron para ordenar, lo vigente lo decide `vence_en`), `vence_en`, fechas. **Sin datos de contacto de quien lo carga** | vigentes: pública; vencidos: sólo dentro del recorrido de su aviso |
+| `avisos` | `id`, `id_corto`, `autor_id`, `tipo` (`perdido` \| `encontrado` \| `adopcion`), `estado` (`activo` \| `resuelto` \| `vencido` \| `oculto`), `especie` (`perro` \| `gato` \| `otro`), `nombre`, `sexo`, `tamano`, `edad_aprox`, `color`, `senas`, `historia`, `fecha_hecho`, `punto` (geography Point, ya redondeado), `departamento`, `zona`, `recompensa` (sólo perdido), `vence_en`, `resuelto_en`, `resolucion`, `ayudo_sitio`, `ayudo_avistamiento`, `oculto_por` (`admin` \| `denuncias`, sólo si está oculto), fechas | activos y resueltos: pública; vencidos: sólo por su link; ocultos: autor y admin |
+| `avistamientos` | `id`, `id_corto`, `aviso_id` (opcional), `autor_id`, `especie`, `nota` (≤ 140), `foto`, `punto` (redondeado), `visto_en`, `departamento`, `zona`, `estado` (`activo` \| `vencido` \| `oculto`; el vencido lo marca el cron para ordenar, lo vigente lo decide `vence_en`), `oculto_por`, `vence_en`, fechas. **Sin datos de contacto de quien lo carga** | vigentes: pública; vencidos: sólo dentro del recorrido de su aviso |
 | `fotos_aviso` | `aviso_id`, `path`, `orden` (0–5) | como su aviso |
 | `contactos_aviso` | `aviso_id`, `whatsapp` (E.164), `consentido_en` | **ninguna pública**: la lee `/api/contacto` con la service role |
 | `departamentos`, `zonas` | nombre, polígono, centroide | pública, sólo lectura |
@@ -171,7 +171,8 @@ tamaño (3 MB) y de tipo (WebP y JPEG), con el patrón de bagayí 20260827001200
 | `tope_avisos_por_dia`, `tope_avistamientos_por_dia` | 5, 20 | anti-spam |
 | `parecidos_km`, `parecidos_dias` | 3, 15 | Parecidos |
 | `umbral_contador` | 50 | el contador del inicio |
-| `denuncias_para_ocultar` | ver §10 | moderación |
+| `denuncias_para_ocultar` | 3 | §5.4, moderación |
+| `antiguedad_denunciante_horas` | 24 | §5.4: debajo de esto, la denuncia no cuenta para ocultar |
 
 ### 5.3 · El punto: la regla que manda
 
@@ -205,6 +206,27 @@ tamaño (3 MB) y de tipo (WebP y JPEG), con el patrón de bagayí 20260827001200
   (bagayí 087 + `api/mp/tareas.js`).
 - **Mails que no son de login** (avistamiento, recordatorio) salen por la API del
   proveedor de mail, con otro remitente que el del login.
+- **Ocultar por denuncias** (decisión del dueño, 2026-09-28):
+  - Un aviso o un avistamiento se oculta solo cuando junta
+    `denuncias_para_ocultar` (3) denuncias abiertas de **usuarios distintos**.
+  - **No cuentan** las denuncias de cuentas con menos de
+    `antiguedad_denunciante_horas` (24): crear cuentas para bajar un aviso no
+    sirve. La denuncia igual se guarda y llega a la cola.
+  - **Los avisos de protectoras verificadas nunca se ocultan solos:** van a la
+    cola del admin, como cualquier denuncia.
+  - Lo decide un trigger sobre `denuncias` en la base, no la UI. El estado que
+    pone es `oculto`, con el motivo `por_denuncias`, para distinguirlo de lo que
+    oculta el admin a mano.
+  - Al ocultarse, sale un mail al admin en el momento (el mismo camino que el
+    mail de avistamiento: webhook de la base a `/api` con secreto).
+  - El autor ve su aviso en Mis avisos como **«En revisión»**, con una línea que
+    explica que recibió denuncias y que alguien lo va a mirar; su link público
+    dice que el aviso está en revisión, no «no existe».
+  - Si el admin descarta las denuncias, el aviso vuelve a `activo` y esas
+    denuncias no vuelven a contar.
+  - Ataques a probar: una persona con tres denuncias; tres cuentas recién
+    creadas; denunciar un aviso de protectora verificada; el autor intentando
+    sacarse el `oculto` a sí mismo.
 - **INSERT blindado además del UPDATE,** y los ataques de cada fase probados por
   MCP con `set role` y `request.jwt.claims` (BRIEF §9.3).
 
@@ -319,8 +341,11 @@ diseñado y apagado; su fase va después de Compartir.
    | Protomaps (PMTiles propio) | sí | lo que aguante el hosting | lo pagamos nosotros |
 
    Precios y condiciones leídos en el sitio de cada proveedor el 2026-09-28.
-2. **Ocultar por denuncias** (BRIEF §10.3). Propuesta del brief: 3 denuncias de
-   usuarios distintos ocultan un aviso o un avistamiento hasta la revisión.
+2. **Ocultar por denuncias** (BRIEF §10.3). **Decidido el 2026-09-28:** umbral
+   de 3 denuncias de usuarios distintos, con tres resguardos: no cuentan las
+   cuentas de menos de 24 horas, las protectoras verificadas nunca se ocultan
+   solas, y al ocultarse sale un mail al admin y el autor ve «En revisión»
+   (§5.4). La alternativa descartada: que las denuncias sólo llegaran a la cola.
 3. **Moderación de la publicación en redes.** Opciones: sale directo; sale sólo
    lo de protectoras verificadas; o pasa por una cola que el admin aprueba con un
    toque. **Recomendación: la cola**, porque lo que sale ahí lleva la marca.
