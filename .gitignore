@@ -6,3 +6,7 @@ dist
 .env*
 !.env.example
 .vercel
+# La prueba armada para pegar en execute_sql (scripts/prueba-sql.mjs).
+supabase/pruebas/.armado.sql
+# Lo que se baja del INE: 57 MB que no van al repo (fase 1, tarea 8).
+supabase/datos/territorio/crudo/
