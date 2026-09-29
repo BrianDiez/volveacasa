@@ -20,13 +20,19 @@ const ISO = {
 
 export function nombreDepartamento(valor) {
   const v = String(valor ?? '').trim();
-  if (ISO[v.toUpperCase()]) return ISO[v.toUpperCase()];
+  // El INE escribe el código sin guion («UYAR»); la norma ISO, con («UY-AR»).
+  const iso = v.toUpperCase().replace(/^UY-?/, 'UY-');
+  if (ISO[iso]) return ISO[iso];
   const hallado = DEPARTAMENTOS.find((d) => clave(d) === clave(v));
   if (!hallado) throw new Error(`Departamento desconocido: «${valor}»`);
   return hallado;
 }
 
-/** Los 62 barrios de Montevideo del INE, con su nombre para mostrar. */
+/**
+ * Los 62 barrios de Montevideo del INE, con su nombre para mostrar. La clave es
+ * el nombre del Censo 2023 pasado por `clave()`: sin tildes, pero con las comas
+ * y las abreviaturas del INE («PQUE. BATLLE, V. DOLORES»).
+ */
 export const BARRIOS = {
   'AGUADA': 'Aguada',
   'AIRES PUROS': 'Aires Puros',
@@ -36,60 +42,60 @@ export const BARRIOS = {
   'BELVEDERE': 'Belvedere',
   'BRAZO ORIENTAL': 'Brazo Oriental',
   'BUCEO': 'Buceo',
-  'CAPURRO BELLA VISTA': 'Capurro, Bella Vista',
+  'CAPURRO, BELLA VISTA': 'Capurro, Bella Vista',
   'CARRASCO': 'Carrasco',
   'CARRASCO NORTE': 'Carrasco Norte',
-  'CASABO PAJAS BLANCAS': 'Casabó, Pajas Blancas',
+  'CASABO, PAJAS BLANCAS': 'Casabó, Pajas Blancas',
   'CASAVALLE': 'Casavalle',
-  'CASTRO CASTELLANOS': 'Castro, Pérez Castellanos',
+  'CASTRO, P. CASTELLANOS': 'Castro, Pérez Castellanos',
   'CENTRO': 'Centro',
   'CERRITO': 'Cerrito',
   'CERRO': 'Cerro',
   'CIUDAD VIEJA': 'Ciudad Vieja',
   'COLON CENTRO Y NOROESTE': 'Colón Centro y Noroeste',
-  'COLON SURESTE ABAYUBA': 'Colón Sureste, Abayubá',
+  'COLON SURESTE, ABAYUBA': 'Colón Sureste, Abayubá',
   'CONCILIACION': 'Conciliación',
   'CORDON': 'Cordón',
-  'FIGURITA': 'Figurita',
   'FLOR DE MARONAS': 'Flor de Maroñas',
   'ITUZAINGO': 'Ituzaingó',
   'JACINTO VERA': 'Jacinto Vera',
   'JARDINES DEL HIPODROMO': 'Jardines del Hipódromo',
   'LA BLANQUEADA': 'La Blanqueada',
   'LA COMERCIAL': 'La Comercial',
-  'LA PALOMA TOMKINSON': 'La Paloma, Tomkinson',
+  'LA FIGURITA': 'La Figurita',
+  'LA PALOMA, TOMKINSON': 'La Paloma, Tomkinson',
   'LA TEJA': 'La Teja',
   'LARRANAGA': 'Larrañaga',
   'LAS ACACIAS': 'Las Acacias',
   'LAS CANTERAS': 'Las Canteras',
-  'LEZICA MELILLA': 'Lezica, Melilla',
+  'LEZICA, MELILLA': 'Lezica, Melilla',
   'MALVIN': 'Malvín',
   'MALVIN NORTE': 'Malvín Norte',
   'MANGA': 'Manga',
-  'MANGA TOLEDO CHICO': 'Manga, Toledo Chico',
-  'MARONAS PARQUE GUARANI': 'Maroñas, Parque Guaraní',
-  'MERCADO MODELO Y BOLIVAR': 'Mercado Modelo y Bolívar',
+  'MANGA, TOLEDO CHICO': 'Manga, Toledo Chico',
+  'MARONAS, PARQUE GUARANI': 'Maroñas, Parque Guaraní',
+  'MERCADO MODELO, BOLIVAR': 'Mercado Modelo y Bolívar',
   'NUEVO PARIS': 'Nuevo París',
   'PALERMO': 'Palermo',
   'PARQUE RODO': 'Parque Rodó',
   'PASO DE LA ARENA': 'Paso de la Arena',
   'PASO DE LAS DURANAS': 'Paso de las Duranas',
-  'PENAROL LAVALLEJA': 'Peñarol, Lavalleja',
+  'PENAROL, LAVALLEJA': 'Peñarol, Lavalleja',
   'PIEDRAS BLANCAS': 'Piedras Blancas',
   'POCITOS': 'Pocitos',
-  'PQUE BATLLE VILLA DOLORES': 'Parque Batlle, Villa Dolores',
-  'PRADO NUEVA SAVONA': 'Prado, Nueva Savona',
+  'PQUE. BATLLE, V. DOLORES': 'Parque Batlle, Villa Dolores',
+  'PRADO, NUEVA SAVONA': 'Prado, Nueva Savona',
+  'PTA. RIELES, BELLA ITALIA': 'Punta de Rieles, Bella Italia',
   'PUNTA CARRETAS': 'Punta Carretas',
   'PUNTA GORDA': 'Punta Gorda',
-  'PUNTA RIELES BELLA ITALIA': 'Punta de Rieles, Bella Italia',
   'REDUCTO': 'Reducto',
   'SAYAGO': 'Sayago',
   'TRES CRUCES': 'Tres Cruces',
-  'TRES OMBUES PBLO VICTORIA': 'Tres Ombúes, Pueblo Victoria',
+  'TRES OMBUES, VICTORIA': 'Tres Ombúes, Pueblo Victoria',
   'UNION': 'Unión',
   'VILLA ESPANOLA': 'Villa Española',
-  'VILLA GARCIA MANGA RURAL': 'Villa García, Manga Rural',
-  'VILLA MUNOZ RETIRO': 'Villa Muñoz, Retiro',
+  'VILLA GARCIA, MANGA RUR.': 'Villa García, Manga Rural',
+  'VILLA MUNOZ, RETIRO': 'Villa Muñoz, Retiro',
 };
 
 export function nombreBarrio(valor) {

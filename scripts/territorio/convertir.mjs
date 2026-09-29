@@ -19,9 +19,17 @@ if (!carpeta) {
 const SALIDA = new URL('../../public/datos/territorio/', import.meta.url);
 mkdirSync(SALIDA, { recursive: true });
 
-const COL_DEPTO = ['nomdepto', 'nombre', 'departamento', 'cdepto_iso', 'codigo', 'depto'];
-const COL_BARRIO = ['nombbarr', 'nombarrio', 'barrio', 'nombre'];
+// El código ISO va antes que el nombre: el INE trae una fila «LIMITE
+// CONTESTADO» con el código de Artigas (UYAR), y así se suma a Artigas, como
+// la clasifica el propio INE, en vez de frenar la carga.
+const COL_DEPTO = ['cdepto_iso', 'nomdepto', 'nombre', 'departamento'];
+// NOMBARRIOINE es la columna del Censo 2023 (metadatos del INE).
+const COL_BARRIO = ['nombarrioine', 'nombbarr', 'nombarrio', 'barrio', 'nombre'];
 const COL_LOCALIDAD = ['nomloc', 'nombre', 'localidad'];
+// El INE trae un polígono sin barrio: «N/A», 0,24 km², sin viviendas, una isla
+// frente a la costa este. No es un barrio y no se carga: lo que caiga ahí es
+// «Zona rural de Montevideo».
+const SIN_BARRIO = 'N/A';
 
 function aFeatures({ filas, columnaGeom }, propiedades) {
   return filas.map((fila) => {
@@ -54,8 +62,9 @@ escribir('departamentos', deptos.srid,
   aFeatures(deptos, (f) => ({ nombre: nombreDepartamento(campo(f, COL_DEPTO)) })));
 
 const barrios = leerGpkg(join(carpeta, 'barrios_mvd_23_pg.gpkg'));
+const conBarrio = barrios.filas.filter((f) => String(campo(f, COL_BARRIO)).trim() !== SIN_BARRIO);
 escribir('barrios', barrios.srid,
-  aFeatures(barrios, (f) => ({ nombre: nombreBarrio(campo(f, COL_BARRIO)), departamento: 'Montevideo' })));
+  aFeatures({ ...barrios, filas: conBarrio }, (f) => ({ nombre: nombreBarrio(campo(f, COL_BARRIO)), departamento: 'Montevideo' })));
 
 // En Montevideo la zona es el barrio: sus localidades no se cargan.
 const locs = leerGpkg(join(carpeta, 'loc_23_pg.gpkg'));
