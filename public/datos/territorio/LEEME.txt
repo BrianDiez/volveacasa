@@ -1,0 +1,9 @@
+Polígonos de departamentos, barrios de Montevideo y localidades del resto del
+país, simplificados para el sitio.
+
+Fuente: Instituto Nacional de Estadística (INE), Uruguay.
+Unidades Geoestadísticas del Censo de Población, Hogares y Viviendas 2023.
+Uso libre citando como fuente al INE.
+https://www.gub.uy/instituto-nacional-estadistica/censos2023pvh
+
+Convertidos con scripts/territorio/convertir.mjs del repositorio de Volvé a casa.
