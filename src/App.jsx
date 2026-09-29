@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { LayoutPublico } from './components/Layouts';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Cargando } from './ui/kit';
+import { MODULOS } from './lib/modulos';
 
 /* Las pantallas se cargan por demanda: quien no abre el mapa no descarga el
    mapa (BRIEF §7), y un módulo apagado ni se descarga (§8). */
@@ -40,6 +41,7 @@ const pagina = (cargar, nombre) => lazy(async () => {
 
 const Inicio       = pagina(() => import('./pages/Inicio'), 'Inicio');
 const NoEncontrado = pagina(() => import('./pages/NoEncontrado'), 'NoEncontrado');
+const ModuloApagado = pagina(() => import('./pages/ModuloApagado'), 'ModuloApagado');
 
 export default function App() {
   return (
@@ -49,6 +51,9 @@ export default function App() {
           <Routes>
             <Route element={<LayoutPublico />}>
               <Route index element={<Inicio />} />
+              {Object.entries(MODULOS).map(([clave, m]) => (
+                <Route key={clave} path={m.ruta.slice(1)} element={<ModuloApagado clave={clave} />} />
+              ))}
               <Route path="*" element={<NoEncontrado />} />
             </Route>
           </Routes>
