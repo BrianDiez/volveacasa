@@ -27,7 +27,7 @@ herramienta de búsqueda. El diseño completo y las decisiones cerradas están e
 | 2 · Infraestructura | **Hecho el 2026-09-28** | la tabla de abajo |
 | 3 · Spec del núcleo | **Aprobado por el dueño el 2026-09-28** | `docs/superpowers/specs/2026-09-28-nucleo-design.md` |
 | 4 · Plan | **Hecho el 2026-09-28**: hoja de ruta de las 7 fases (cada pantalla y regla con su tarea y su test) y el plan detallado de la fase 1; el de cada fase siguiente se escribe al cerrar la anterior | `docs/superpowers/plans/` |
-| 5 · Ejecución | **En curso: fase 1 (Base) cerrada el 2026-09-30**, en la rama `fase-1-base`; falta el merge a `main` (§10) | `node scripts/prueba-sql.mjs todos` → `execute_sql`: todas las filas con `pasan = casos` |
+| 5 · Ejecución | **En curso: fase 1 (Base) cerrada y desplegada el 2026-09-30** (merge `--no-ff` a `main`, `5e6170e`, deploy READY) | `node scripts/prueba-sql.mjs todos` → `execute_sql`: todas las filas con `pasan = casos` |
 | 6 · Antes de lanzar | Pendiente | BRIEF §2, paso 6 |
 
 ### Criterios del paso 2
@@ -347,9 +347,10 @@ lecciones caras de bagayí, en el BRIEF §9.3. Lo que más cuesta olvidar:
    tests en verde, build y `npm audit` limpios, `/veterinarias` y `/tienda`
    abiertas a 375 y 1280. Lo que cambió respecto del plan está en §6 y en la
    nota del plan (tarea 12).
-2. **Falta el merge:** PR si hay conector de GitHub o `gh` (§4); si no,
-   `merge --no-ff` a `main` y push, que despliega. Después, abrir
-   https://volveacasa-henna.vercel.app/veterinarias a 375 y 1280: «Todavía no
-   está disponible».
+2. **Mergeada y desplegada:** el dueño eligió `merge --no-ff` a `main` (sin PR:
+   la sesión no tenía conector de GitHub ni `gh`). Con el merge, 122 tests,
+   build y `npm audit` en verde; el deploy de `5e6170e` quedó READY, y en
+   producción `/veterinarias` (375) y `/historias` (1280) dicen «Todavía no
+   está disponible», sin scroll horizontal ni errores en consola.
 3. **Después:** escribir el plan de la fase 2 (Publicar) con
    `superpowers:writing-plans`, mirando lo que de verdad quedó de la 1.
