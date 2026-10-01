@@ -187,7 +187,7 @@ tema solo: `node scripts/prueba-sql.mjs <tema>`. No deja nada escrito.
 | `src/lib/{perfiles,configuracion,territorio,punto,avisos,avistamientos,denuncias,fotos}-base.test.js` | que ninguna migración posterior saque un renglón de cada regla |
 | `src/lib/modulos.test.js`, `src/pages/ModuloApagado.test.jsx` | el registro del código contra las filas que siembra la base; la página apagada |
 | `scripts/territorio/*.test.js` | nombres del INE (2023), lectura de GPB/WKB, simplificación |
-| `supabase/pruebas/*.sql` (en vivo, 78 casos el 2026-09-30) | cada regla corriendo como un usuario real: `node scripts/prueba-sql.mjs todos` |
+| `supabase/pruebas/*.sql` (en vivo, 80 casos el 2026-09-30) | cada regla corriendo como un usuario real: `node scripts/prueba-sql.mjs todos` |
 
 ### Base de datos
 
@@ -203,6 +203,7 @@ tema solo: `node scripts/prueba-sql.mjs <tema>`. No deja nada escrito.
 | `20260929005039_avistamientos.sql` | `avistamientos`: vigencia desde que el animal fue visto, sólo a perdidos activos, el autor edita nota y foto |
 | `20260929005310_denuncias.sql` | `denuncias`, ocultar con los tres resguardos, `estado_publico` |
 | `20261001014504_bucket_fotos.sql` | el bucket `fotos` (3 MB, WebP o JPEG, público) con carpetas por dueño |
+| `20261001020439_ajustes_advisors.sql` | `estado_publico` fuera de la API, policies de `fotos_aviso` por acción, índices de las claves foráneas |
 
 ---
 
@@ -282,19 +283,21 @@ Anotadas al cerrar la fase 1 (2026-09-30):
   departamentos** (decisión del dueño, 2026-09-30). Es como lo clasifica el INE
   (código 02, UYAR): el convertidor lee el código ISO antes que el nombre, y la
   carga une los dos polígonos de Artigas en uno.
-- **Advisors de Supabase al cerrar la fase** (ninguno de nivel ERROR):
-  - *Seguridad, WARN:* `public.estado_publico` es `security definer` y la
-    pueden llamar anon y authenticated. **A propósito:** es lo que hace que el
-    link de un aviso oculto diga «en revisión»; devuelve una palabra, nada del
-    contenido.
-  - *Rendimiento, WARN:* `fotos_aviso` tiene dos policies de SELECT para
-    authenticated (`fotos_lectura` y `fotos_del_autor`, que es `for all`). Con
-    pocas fotos no pesa; si crece, `fotos_del_autor` se parte en
-    insert/update/delete.
-  - *Rendimiento, INFO:* seis claves foráneas sin índice (entre ellas
-    `avistamientos.autor_id` y `denuncias.denunciante_id`, que usan los topes
-    por día) y seis índices sin usar (la base está vacía). Se revisan con datos
-    reales, antes de lanzar.
+- **Advisors de Supabase: arreglados el 2026-09-30** a pedido del dueño
+  (`20261001020439_ajustes_advisors.sql`). Seguridad quedó en 0 avisos.
+  - `estado_publico`: lo que saltea la RLS pasó a `privado.estado_publico`
+    (fuera de la API); `public.estado_publico` es un envoltorio invoker.
+  - `fotos_aviso`: `fotos_del_autor` (`for all`) se partió en alta, editar y
+    borrar, para no sumarse a `fotos_lectura` en cada SELECT.
+  - Las seis claves foráneas tienen índice.
+  - Quedan los «índices sin usar» (INFO): la base está vacía; se miran con
+    datos reales antes de lanzar, no se borran.
+  - `auditoria-base.test.js` ahora falla si vuelve una clave foránea sin índice
+    o dos policies permisivas para el mismo rol y acción.
+- **Commits sin coautoría de Claude** (pedido del dueño, `CLAUDE.md`). Los 36
+  commits anteriores la tienen: sacarla exige reescribir la historia y hacer
+  force push, y el clasificador del modo automático no lo deja; lo corre el
+  dueño si quiere.
 
 ---
 

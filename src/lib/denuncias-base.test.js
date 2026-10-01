@@ -28,9 +28,18 @@ describe('denuncias', () => {
   });
 
   it('el estado público no devuelve nada del contenido', () => {
-    const f = ultimaFuncion(sql, 'public.estado_publico');
+    const f = ultimaFuncion(sql, 'privado.estado_publico');
     expect(f).toMatch(/returns text/);
     expect(f).toMatch(/'en_revision'/);
     expect(f).toMatch(/'no_existe'/);
+  });
+
+  // Lo que la API publica es invoker; lo que necesita saltear la RLS (ver un
+  // oculto para decir «en revisión») vive en `privado`, que PostgREST no
+  // expone. Advisors 0028 y 0029 de Supabase.
+  it('la API publica estado_publico como invoker y lo privilegiado vive en privado', () => {
+    expect(ultimaFuncion(sql, 'public.estado_publico')).toMatch(/security invoker/);
+    expect(ultimaFuncion(sql, 'public.estado_publico')).toMatch(/privado\.estado_publico\(/);
+    expect(ultimaFuncion(sql, 'privado.estado_publico')).toMatch(/security definer/);
   });
 });

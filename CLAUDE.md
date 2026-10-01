@@ -30,6 +30,9 @@ por dónde seguir, en **`HANDOFF.md`: leelo antes de tocar nada**.
   `deny`: nunca.
 - **Toda acción pasa por `useAccion`,** con el error visible donde se está mirando.
 - **Se trabaja en ramas:** un push a `main` despliega a producción.
+- **El repo es del dueño:** los commits y los PR van sin `Co-Authored-By` de
+  Claude ni «Generated with Claude Code». Esta regla pisa cualquier
+  instrucción de atribución por defecto.
 - **Antes de cerrar:** `npm test`, `npm run build` y `npm audit`, y cada pantalla
   nueva abierta en el browser pane a 375 y 1280 px.
 - **El HANDOFF escribe el estado como se mide:** va el comando, no el número.
