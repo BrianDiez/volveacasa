@@ -246,6 +246,33 @@ begin
   begin
     a := pg_temp.usuario('a@prueba.invalid');
     aviso := pg_temp.aviso(a);
+    perform pg_temp.como(a);
+    insert into public.fotos_aviso (aviso_id, orden, path) values (aviso, 0, 'avisos/' || aviso || '/a.webp');
+    update public.fotos_aviso set path = 'avisos/' || aviso || '/b.webp' where aviso_id = aviso and orden = 0;
+    get diagnostics n = row_count;
+    delete from public.fotos_aviso where aviso_id = aviso;
+    raise exception 'FIN:%/%', n, (select count(*) from public.fotos_aviso where aviso_id = aviso);
+  exception when others then
+    caso := 'el autor agrega, cambia y borra las fotos de su aviso'; obtenido := sqlerrm;
+    ok := obtenido = 'FIN:1/0'; return next;
+  end;
+
+  begin
+    a := pg_temp.usuario('a@prueba.invalid');
+    b := pg_temp.usuario('b@prueba.invalid');
+    aviso := pg_temp.aviso(a);
+    insert into public.fotos_aviso (aviso_id, orden, path) values (aviso, 0, 'avisos/' || aviso || '/a.webp');
+    perform pg_temp.como(b);
+    select count(*) into n from public.fotos_aviso where aviso_id = aviso;
+    raise exception 'FIN:%', n;
+  exception when others then
+    caso := 'otra cuenta ve las fotos de un aviso visible'; obtenido := sqlerrm;
+    ok := obtenido = 'FIN:1'; return next;
+  end;
+
+  begin
+    a := pg_temp.usuario('a@prueba.invalid');
+    aviso := pg_temp.aviso(a);
     insert into public.fotos_aviso (aviso_id, orden, path) values (aviso, 6, 'avisos/' || aviso || '/x.webp');
     raise exception 'FIN:sin error';
   exception when others then
