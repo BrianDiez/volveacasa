@@ -27,7 +27,7 @@ herramienta de búsqueda. El diseño completo y las decisiones cerradas están e
 | 2 · Infraestructura | **Hecho el 2026-09-28** | la tabla de abajo |
 | 3 · Spec del núcleo | **Aprobado por el dueño el 2026-09-28** | `docs/superpowers/specs/2026-09-28-nucleo-design.md` |
 | 4 · Plan | **Hecho el 2026-09-28**: hoja de ruta de las 7 fases (cada pantalla y regla con su tarea y su test) y el plan detallado de la fase 1; el de cada fase siguiente se escribe al cerrar la anterior | `docs/superpowers/plans/` |
-| 5 · Ejecución | Pendiente | — |
+| 5 · Ejecución | **En curso: fase 1 (Base) cerrada el 2026-09-30**, en la rama `fase-1-base`; falta el merge a `main` (§10) | `node scripts/prueba-sql.mjs todos` → `execute_sql`: todas las filas con `pasan = casos` |
 | 6 · Antes de lanzar | Pendiente | BRIEF §2, paso 6 |
 
 ### Criterios del paso 2
@@ -55,7 +55,34 @@ git log -1 --oneline origin/main      # qué está desplegado
 -- nombres de archivo de supabase/migrations.
 select version, name from supabase_migrations.schema_migrations order by version;
 select extensions.postgis_version();
+
+-- El territorio cargado (2026-09-30: 19 departamentos; zonas: 62 barrios y
+-- 651 localidades). Se recarga con supabase/datos/territorio/cargar.sql.
+select (select count(*) from public.departamentos) as departamentos;
+select tipo, count(*) from public.zonas group by tipo;
+
+-- Ningún punto guardado con más precisión que su grilla (spec §5.3). Tiene
+-- que dar 0 siempre; se corre al cerrar cada fase.
+select count(*) as con_mas_precision_que_su_grilla
+  from (
+    select a.punto, c.valor from public.avisos a
+      join public.configuracion c on c.clave = 'grilla_' || a.tipo || '_m'
+    union all
+    select v.punto, c.valor from public.avistamientos v
+      join public.configuracion c on c.clave = 'grilla_avistamiento_m'
+  ) t
+ where not (
+   abs(extensions.st_x(extensions.st_transform(t.punto::extensions.geometry, 32721)) / (t.valor #>> '{}')::numeric
+       - round(extensions.st_x(extensions.st_transform(t.punto::extensions.geometry, 32721)) / (t.valor #>> '{}')::numeric)) < 1e-6
+   and abs(extensions.st_y(extensions.st_transform(t.punto::extensions.geometry, 32721)) / (t.valor #>> '{}')::numeric
+       - round(extensions.st_y(extensions.st_transform(t.punto::extensions.geometry, 32721)) / (t.valor #>> '{}')::numeric)) < 1e-6
+ );
 ```
+
+Las reglas de la base, en vivo: `node scripts/prueba-sql.mjs todos` arma
+`supabase/pruebas/.armado.sql` con todos los temas; se pasa entero a
+`execute_sql` y devuelve una fila por tema (`pasan`, `casos`, `fallan`). Un
+tema solo: `node scripts/prueba-sql.mjs <tema>`. No deja nada escrito.
 
 ---
 
@@ -90,10 +117,14 @@ select extensions.postgis_version();
 - **La CSP y `Permissions-Policy` sólo se aplican desplegado** (`npm run dev` no
   lee `vercel.json`). Verificado el 2026-09-28: la home carga fuentes y chunks
   sin violaciones, y `geolocation=(self)` llega en los headers.
-- **Falta para el paso 5:** con qué se abren los PR. Sin `gh` ni el conector de
-  GitHub, las ramas se pueden subir pero no abrir el PR desde la sesión. Opciones:
-  autorizar el conector de GitHub en claude.ai, o instalar `gh` y que el dueño
-  haga `gh auth login`.
+- **PR:** al cerrar la fase 1 (2026-09-30) la sesión seguía sin `gh` y sin un
+  conector de GitHub (el plugin `engineering:github` figura sin autorizar). El
+  dueño dijo haber conectado GitHub; si el conector aparece en una sesión
+  nueva, la rama se cierra con PR; si no, con `merge --no-ff` (hoja de ruta,
+  «Cómo se trabaja»). Instalar `gh` y hacer `gh auth login` también lo resuelve.
+- **Los datos del territorio están en `main`** desde el 2026-09-29
+  (`public/datos/territorio/`, commit «Datos del territorio … para cargar en la
+  base»): la base los baja por HTTP y los preview de Vercel piden login.
 - **`vercel dev` en el 3001:** no está instalado; el proxy de `/api` ya apunta
   ahí (`vite.config.js`). Hace falta recién cuando haya funciones en `/api`.
 
@@ -127,9 +158,23 @@ select extensions.postgis_version();
 - `Denunciar.jsx`, `BorrarCuenta.jsx`, `EtiquetaEnvio.jsx` (→ afiche) y las
   migraciones de patrón: dependen del esquema y entran en su fase (BRIEF §2, paso 4).
 - `src/pruebas/fixtures.js`: lee las columnas de las migraciones para no mentir
-  sobre el esquema (bagayí §6.73–75). Entra con la fase Base, cuando haya tablas.
-- `siempre-un-admin-base.test.js`: el patrón para cada regla de la base; entra
-  con la primera regla.
+  sobre el esquema (bagayí §6.73–75). Entra con la primera pantalla que lea
+  tablas (fase 2): la fase 1 no tuvo pantallas con datos.
+- El patrón de `siempre-un-admin-base.test.js` ya está, repartido: cada regla de
+  la base tiene su `src/lib/*-base.test.js` (abajo).
+
+### Fase 1 · lo nuevo
+
+| Archivo | Qué hace |
+|---|---|
+| `src/pruebas/migraciones.js` | lee las migraciones del disco para los tests `*-base` |
+| `supabase/pruebas/00-ayudas.sql` + `<tema>.sql` | el arnés en vivo: usuarios de prueba, `como()`, `como_anon()`, avisos, grilla; cada tema define `pg_temp.probar()` |
+| `scripts/prueba-sql.mjs` | arma un tema, o `todos`, en `supabase/pruebas/.armado.sql` para `execute_sql` |
+| `src/lib/modulos.js`, `src/pages/ModuloApagado.jsx` | el registro único de módulos y flags; sus rutas dicen «Todavía no está disponible» |
+| `scripts/territorio/*.mjs` | leer los GeoPackage del INE con `node:sqlite`, simplificar y escribir GeoJSON |
+| `public/datos/territorio/*.geojson` + `LEEME.txt` | los polígonos simplificados, públicos, con la atribución al INE |
+| `supabase/datos/territorio/cargar.sql` | la carga con `pg_net`, por partes; repetible |
+| `supabase/datos/territorio/crudo/` | el zip del INE y lo que trae (ignorado por git; se baja de nuevo con la URL del plan, tarea 8) |
 
 ### Tests
 
@@ -138,12 +183,26 @@ select extensions.postgis_version();
 | `src/styles/tokens.test.js` | que `tokens.css` tenga los colores que se midieron y la marca aprobada |
 | `src/components/Layouts.test.jsx` | cinco tabs con Publicar al centro, el pie con UTM, nada de bagayí en el header |
 | `src/lib/slug.test.js`, `fechas.test.js`, `api/_lib/*.test.js` | los de bagayí, que vienen con sus módulos |
+| `src/lib/auditoria-base.test.js` | toda tabla con RLS, todo `security definer` con `search_path`, ninguna función de trigger ejecutable por la API, ningún punto exacto |
+| `src/lib/{perfiles,configuracion,territorio,punto,avisos,avistamientos,denuncias,fotos}-base.test.js` | que ninguna migración posterior saque un renglón de cada regla |
+| `src/lib/modulos.test.js`, `src/pages/ModuloApagado.test.jsx` | el registro del código contra las filas que siembra la base; la página apagada |
+| `scripts/territorio/*.test.js` | nombres del INE (2023), lectura de GPB/WKB, simplificación |
+| `supabase/pruebas/*.sql` (en vivo, 78 casos el 2026-09-30) | cada regla corriendo como un usuario real: `node scripts/prueba-sql.mjs todos` |
 
 ### Base de datos
 
 | Migración (versión = la registrada en la base) | Qué hace |
 |---|---|
 | `20260928182924_postgis.sql` | PostGIS en el esquema `extensions` |
+| `20260929001625_perfiles.sql` | `perfiles` (público) y `perfiles_privados` (rol, suspensión, WhatsApp); alta desde `auth.users`; blindaje; siempre un admin; esquema `privado` con `es_admin` y compañía |
+| `20260929001850_configuracion_y_modulos.sql` | las 16 claves editables (ninguna grilla bajo 50 m) y el interruptor de cada módulo y flag, apagados |
+| `20260929002908_territorio.sql` | `departamentos` y `zonas` (barrio o localidad), sólo lectura desde la API |
+| `20260929004111_pg_net.sql` | `pg_net`, para que la base haga pedidos HTTP |
+| `20260929004502_punto.sql` | `redondear_punto` (UTM 21S), `ubicar` (barrio, localidad o zona rural; fuera de Uruguay se rechaza) y el trigger `ubicar_y_redondear` |
+| `20260929004811_avisos.sql` | `avisos`, `fotos_aviso`, `contactos_aviso` (anon no lee), blindaje, `renovar_aviso` |
+| `20260929005039_avistamientos.sql` | `avistamientos`: vigencia desde que el animal fue visto, sólo a perdidos activos, el autor edita nota y foto |
+| `20260929005310_denuncias.sql` | `denuncias`, ocultar con los tres resguardos, `estado_publico` |
+| `20261001014504_bucket_fotos.sql` | el bucket `fotos` (3 MB, WebP o JPEG, público) con carpetas por dueño |
 
 ---
 
@@ -161,6 +220,41 @@ select extensions.postgis_version();
   la migración con su propia hora (la de PostGIS quedó `20260928182924`); el
   archivo se llamaba `…000100`. Es el desfase que bagayí arrastra (su §4). Acá se
   renombró el archivo y la regla quedó en `CLAUDE.md`.
+
+### Fase 1 (2026-09-28 al 30)
+
+- **Una función `language sql` se valida al crearla.** `pg_temp.punto_en` leía
+  `public.zonas` y las ayudas se cargan con todos los temas, también antes de
+  que exista la tabla: «relation public.zonas does not exist». Va en plpgsql,
+  que resuelve la tabla recién al llamarla.
+- **RAISE escribe un boolean como `t`, no `true`.** Usa la función de salida del
+  tipo; `::text` da `true`. Los casos que pasaban un boolean crudo daban falso
+  negativo: todos llevan `::text`.
+- **Un regex que leía el `enum` como si fuera un módulo.** `modulos.test.js`
+  tomaba `create type … as enum ('modulo', 'flag')` como la clave `modulo`. Se
+  ancló a las filas del insert.
+- **Los nombres del INE de 2023 no eran los del plan.** Los barrios vienen con
+  comas y abreviaturas («PQUE. BATLLE, V. DOLORES») en `NOMBARRIOINE`; hay un
+  polígono «N/A» (0,24 km², sin viviendas, una isla) que no se carga; y una
+  fila «LIMITE CONTESTADO» con el código de Artigas (§7). Se miró el archivo
+  real antes de convertir (columnas y nombres) en vez de adivinar.
+- **`st_union` frenó con «TopologyException: side location conflict».** La
+  simplificación (Douglas-Peucker) deja algún anillo cruzado (Montevideo, Paso
+  de la Arena, Parque Rodó, Cerro Largo). `st_makevalid` iba DESPUÉS de unir;
+  ahora va en cada pieza, antes. Quedaron 0 geometrías inválidas.
+- **`length()` no es el tamaño del archivo.** Sobre `text` cuenta caracteres; los
+  bytes son `octet_length()`. La diferencia eran justo las letras con tilde.
+- **Un caso en vivo que pasaba aunque la regla no anduviera.** «Tres denuncias
+  ocultan un avistamiento» armaba `estado || '/' || oculto_por`: sin ocultar,
+  `oculto_por` es NULL y todo da NULL, que el `coalesce` volvía «no se ve». Ahora
+  lo confirma el autor (`oculto/denuncias`) y se probó con un control de dos
+  denuncias que tiene que fallar (`FIN:1/activo/-`). Regla: **ningún caso nuevo
+  se da por bueno sin haberlo visto fallar.**
+- **La sesión se cortó en medio de un `apply_migration`.** Antes de repetirlo se
+  miró `list_migrations` y el catálogo: no se había aplicado. Nunca repetir una
+  migración sin mirar primero.
+- **El clasificador del modo automático frenó el chequeo del deploy de Vercel**
+  después del push a `main`. El dueño confirmó a mano que el GeoJSON se servía.
 
 ---
 
@@ -181,6 +275,26 @@ Se escriben en el spec del núcleo (paso 3). Anotadas el 2026-09-28:
   propio spec después del núcleo, y **público**: quien entra ve las fotos y los
   nombres de los animales, y al tocar uno lee su historia. El núcleo deja el
   enganche: al marcar «¡Encontró familia!», invita a contar cómo le va.
+
+Anotadas al cerrar la fase 1 (2026-09-30):
+
+- **El Límite Contestado va con Artigas: está dentro de Uruguay, y son 19
+  departamentos** (decisión del dueño, 2026-09-30). Es como lo clasifica el INE
+  (código 02, UYAR): el convertidor lee el código ISO antes que el nombre, y la
+  carga une los dos polígonos de Artigas en uno.
+- **Advisors de Supabase al cerrar la fase** (ninguno de nivel ERROR):
+  - *Seguridad, WARN:* `public.estado_publico` es `security definer` y la
+    pueden llamar anon y authenticated. **A propósito:** es lo que hace que el
+    link de un aviso oculto diga «en revisión»; devuelve una palabra, nada del
+    contenido.
+  - *Rendimiento, WARN:* `fotos_aviso` tiene dos policies de SELECT para
+    authenticated (`fotos_lectura` y `fotos_del_autor`, que es `for all`). Con
+    pocas fotos no pesa; si crece, `fotos_del_autor` se parte en
+    insert/update/delete.
+  - *Rendimiento, INFO:* seis claves foráneas sin índice (entre ellas
+    `avistamientos.autor_id` y `denuncias.denunciante_id`, que usan los topes
+    por día) y seis índices sin usar (la base está vacía). Se revisan con datos
+    reales, antes de lanzar.
 
 ---
 
@@ -225,3 +339,17 @@ lecciones caras de bagayí, en el BRIEF §9.3. Lo que más cuesta olvidar:
    `eventos` y `cuotas` entran con las fases que los usan.
 4. Paso 5: ejecutar la fase 1 (tarea 0 en adelante). La tarea 8 baja un zip
    de 57 MB del INE: se le pide permiso al dueño en ese paso.
+
+### Al cierre del 2026-09-30
+
+1. **Fase 1 (Base) hecha** en la rama `fase-1-base`: 10 migraciones aplicadas
+   y con el nombre de su versión, el territorio cargado, 78 casos en vivo y 122
+   tests en verde, build y `npm audit` limpios, `/veterinarias` y `/tienda`
+   abiertas a 375 y 1280. Lo que cambió respecto del plan está en §6 y en la
+   nota del plan (tarea 12).
+2. **Falta el merge:** PR si hay conector de GitHub o `gh` (§4); si no,
+   `merge --no-ff` a `main` y push, que despliega. Después, abrir
+   https://volveacasa-henna.vercel.app/veterinarias a 375 y 1280: «Todavía no
+   está disponible».
+3. **Después:** escribir el plan de la fase 2 (Publicar) con
+   `superpowers:writing-plans`, mirando lo que de verdad quedó de la 1.
