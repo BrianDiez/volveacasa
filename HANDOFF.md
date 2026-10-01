@@ -278,11 +278,10 @@ Se escriben en el spec del núcleo (paso 3). Anotadas el 2026-09-28:
 
 Anotadas al cerrar la fase 1 (2026-09-30):
 
-- **El Límite Contestado va con Artigas**, como lo clasifica el INE (código
-  02, UYAR): el convertidor lee el código ISO antes que el nombre. Tomado por
-  defecto y avisado al dueño; si prefiere dejarlo afuera, se filtra esa fila en
-  `scripts/territorio/convertir.mjs` y se recarga (un punto ahí pasaría a
-  rechazarse como «fuera de Uruguay»).
+- **El Límite Contestado va con Artigas: está dentro de Uruguay, y son 19
+  departamentos** (decisión del dueño, 2026-09-30). Es como lo clasifica el INE
+  (código 02, UYAR): el convertidor lee el código ISO antes que el nombre, y la
+  carga une los dos polígonos de Artigas en uno.
 - **Advisors de Supabase al cerrar la fase** (ninguno de nivel ERROR):
   - *Seguridad, WARN:* `public.estado_publico` es `security definer` y la
     pueden llamar anon y authenticated. **A propósito:** es lo que hace que el
